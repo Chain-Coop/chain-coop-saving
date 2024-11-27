@@ -12,6 +12,18 @@ contract ChainCoopSaving is IChainCoopSaving{
     event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 initialAmount,uint256 goalAmount,uint256 duration,bytes32 _poolId);    
     event Withdraw(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);  
     event UpdateSaving(address indexed user,address indexed _tokenAddress, uint256 amount,bytes32 _poolId);
+
+    //Mapping
+    mapping(address => SavingPool) public userSavingPool;
+    mapping(bytes32 => SavingPool) public poolSavingPool;
+    mapping(address => mapping(bytes32 => uint256)) public userPoolBalance;
+   
+   //Pool Count
+   uint256 public poolCount = 0;
+
+  
+
+   
    
 
      /***
