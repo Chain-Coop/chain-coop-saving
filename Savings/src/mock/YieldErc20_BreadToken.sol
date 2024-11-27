@@ -2,6 +2,9 @@
 pragma solidity ^0.8.25;
 
 
-contract ChainCoopSaving{
+contract YieldErc20_BreadToken{
+    constructor(){
+
+    }
     
 }
