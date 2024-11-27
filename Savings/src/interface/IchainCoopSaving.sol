@@ -48,6 +48,5 @@ interface IChainCoopSaving{
      * **/
     function getSavingPoolBySaver(address _saver)external view returns(SavingPool memory)
 
-
-
 }
+
