@@ -2,10 +2,26 @@
 pragma solidity ^0.8.25;
 import {IChainCoopSaving} from "./interface/IchainCoopSaving.sol";
 import {LibChainCoopSaving} from  "./lib/LibChainCoopSaving.sol";
+import "./ChainCoopManagement.sol";
 
 
-contract ChainCoopSaving is IChainCoopSaving{
+//import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+
+contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
     using LibChainCoopSaving for address;
+   
+
+
+    //constructor => incase of upgradability will update it
+    constructor(address _tokenAddress) ChainCoopManagement(_tokenAddress){
+      
+        }
+
+    //      function initialize(address _allowedToken) public initializer {
+    //     __ChainCoopManagement_init(_allowedToken); // Initialize the inherited contract
+   
+    // }
 
 
     //events
@@ -30,7 +46,7 @@ contract ChainCoopSaving is IChainCoopSaving{
      * @notice Allow Opening a saving pool with initial contribution
      * 
      */
-    function openSavingPool(address _tokenTosaveWith,uint256 _initialAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration)external{}
+    function openSavingPool(address _tokenTosaveWith,uint256 _initialAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration)  external{}
     /*****
      * @notice Allow adding funds to an existing saving pool
      */

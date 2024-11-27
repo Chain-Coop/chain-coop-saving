@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 
-
+//import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 contract ChainCoopManagement {
 
     address public owner;
@@ -28,6 +28,11 @@ contract ChainCoopManagement {
         isTokenAllowed[_tokenAddress] = true;
        
     }
+    // // Initialize function instead of constructor for upgradeable contract
+    // function initialize(address _tokenAddress) public initializer {
+    //     __Ownable_init();  // Initializes the OwnableUpgradeable (owner functionality)
+    //     isTokenAllowed[_tokenAddress] = true;
+    // }
   
    
     function transferOwnership(address newOwner) external onlyOwner {
