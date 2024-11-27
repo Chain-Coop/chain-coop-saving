@@ -1,7 +1,45 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
+import {IChainCoopSaving} from "./interface/IchainCoopSaving.sol";
+import {LibChainCoopSaving} from  "./lib/LibChainCoopSaving.sol";
 
 
-contract ChainCoopSaving{
+contract ChainCoopSaving is IChainCoopSaving{
+    using LibChainCoopSaving for address;
+
+
+    //events
+    event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 initialAmount,uint256 goalAmount,uint256 duration,bytes32 _poolId);    
+    event Withdraw(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);  
+    event UpdateSaving(address indexed user,address indexed _tokenAddress, uint256 amount,bytes32 _poolId);
+   
+
+     /***
+     * @notice Allow Opening a saving pool with initial contribution
+     * 
+     */
+    function openSavingPool(address _tokenTosaveWith,uint256 _initialAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration)external{}
+    /*****
+     * @notice Allow adding funds to an existing saving pool
+     */
+    function updateSaving(uint256 _amount)external{}
+
+    function withdraw()external view returns(bytes32){}
+  
+    /****
+     * @notice Get All total number of  pools created 
+     */
+    function getSavingPoolCount()external view returns(uint256){}
+    /***
+     * @notice get pool by index
+     * @param _poolIndex Index of the pool to get
+     * 
+     * **/
+    function getSavingPoolByIndex(bytes32 _index)external view returns(SavingPool memory){}
+    /***
+     * @notice get pool by the creator address
+     * **/
+    function getSavingPoolBySaver(address _saver)external view returns(SavingPool memory){}
+
     
 }
