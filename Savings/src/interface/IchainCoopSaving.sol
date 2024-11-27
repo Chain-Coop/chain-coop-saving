@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-type Duration is uint256;
+
 
 
 
@@ -23,7 +23,7 @@ interface IChainCoopSaving{
      * @notice Allow Opening a saving pool with initial contribution
      * 
      */
-    function openSavingPool(address _tokenTosaveWith,uint256 _goalAmount,string calldata _reason,Duration _duration)external;
+    function openSavingPool(address _tokenTosaveWith,uint256 _goalAmount,string calldata _reason,uint256 _duration)external;
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
