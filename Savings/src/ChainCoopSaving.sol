@@ -46,7 +46,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
      * @notice Allow Opening a saving pool with initial contribution
      * 
      */
-    function openSavingPool(address _tokenTosaveWith,uint256 _initialAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration)  external{}
+    function openSavingPool(address _tokenTosaveWith,uint256 _initialAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration) onlyAllowedTokens(_tokenTosaveWith) external{}
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
