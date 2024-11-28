@@ -8,6 +8,10 @@ import "./ChainCoopManagement.sol";
 //import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
+error ZerorInitialAmount(uint256 _amount);
+error ZeroDuration(uint256 _duration);
+error ZeroGoalAmount(uint256  _goalamount);
+
 contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
     using LibChainCoopSaving for address;
    
@@ -46,7 +50,32 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
      * @notice Allow Opening a saving pool with initial contribution
      * 
      */
-    function openSavingPool(address _tokenTosaveWith,uint256 _initialAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration) onlyAllowedTokens(_tokenTosaveWith) external{}
+    function openSavingPool(address _tokenTosaveWith,uint256 _savedAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration) onlyAllowedTokens(_tokenTosaveWith) external{
+       if (_savedAmount <= 0){
+        revert ZerorInitialAmount(_savedAmount);
+       }
+       if (_goalAmount <= 0){
+        revert ZeroGoalAmount(_goalAmount);
+        }
+        if (_duration <= 0){
+            revert ZeroDuration(_duration);
+            }
+            
+       bytes32 _poolId = LibChainCoopSaving.generatePoolIndex(
+        msg.sender,       
+        block.timestamp,   
+        _goalAmount        
+    );
+    
+    SavingPool memory pool = SavingPool({saver:msg.sender,tokenToSaveWith:_tokenTosaveWith,Reason:_reason,poolIndex:_poolId,goalAmount:_goalAmount,Duration:_duration,amountSaved:_savedAmount,isGoalAccomplished:false});
+    userSavingPool[msg.sender] = pool;
+    poolSavingPool[_poolId] = pool;
+    userPoolBalance[msg.sender][_poolId] = _savedAmount;
+    poolCount++;
+    emit OpenSavingPool(msg.sender,_tokenTosaveWith,_savedAmount,_goalAmount,_duration,_poolId);
+
+        
+    }
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
