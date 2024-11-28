@@ -105,7 +105,33 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
             
     }
 
-    function withdraw()external view returns(bytes32){}
+//prevent reentrancy attack
+    function withdraw(uint256 _index)external {
+        SavingPool storage pool = userSavingPool[_index];
+        if(pool.saver != msg.sender){
+            revert NotPoolOwner(msg.sender,pool.poolIndex);
+            }
+            if(pool.isGoalAccomplished){
+                //return all erc20 token to the user
+                //saved amount to zeror
+
+                pool.amountSaved = 0;
+                
+                }else{
+                    //return all erc20 token to the user
+                    //saved amount to zeror
+                    //take some penalty fee i.e 1 %
+                    //transfer penalty fee to the contract owner
+                    //transfer remaining amount to the user
+                    
+                }
+                
+                
+                
+                
+
+
+    }
   
     /****
      * @notice Get All total number of  pools created 

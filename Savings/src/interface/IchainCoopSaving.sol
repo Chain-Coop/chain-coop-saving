@@ -32,7 +32,7 @@ interface IChainCoopSaving{
      * @notice Allow withdrawing funds from an existing saving pool
      * 
      * */
-    function withdraw()external view returns(bytes32);
+    function withdraw(uint256 _index)external;
   
     /****
      * @notice Get All total number of  pools created 
