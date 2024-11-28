@@ -23,11 +23,11 @@ interface IChainCoopSaving{
      * @notice Allow Opening a saving pool with initial contribution
      * 
      */
-    function openSavingPool(address _tokenTosaveWith,uint256 __savedAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration)external;
+    function openSavingPool(address _tokenTosaveWith,uint256 _savedAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration)external;
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
-    function updateSaving(uint256 _amount)external;
+    function updateSaving(uint256 _poolIndex,uint256 _amount)external;
     /*****
      * @notice Allow withdrawing funds from an existing saving pool
      * 

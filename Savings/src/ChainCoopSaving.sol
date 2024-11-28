@@ -4,13 +4,17 @@ import {IChainCoopSaving} from "./interface/IchainCoopSaving.sol";
 import {LibChainCoopSaving} from  "./lib/LibChainCoopSaving.sol";
 import "./ChainCoopManagement.sol";
 
-
+ /*****TODO
+     * Add IERC20 Interface
+     */
 //import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
-error ZerorInitialAmount(uint256 _amount);
+error ZeroAmount(uint256 _amount);
+
 error ZeroDuration(uint256 _duration);
 error ZeroGoalAmount(uint256  _goalamount);
+error NotPoolOwner(address _caller,bytes32 _poolId);
 
 contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
     using LibChainCoopSaving for address;
@@ -29,12 +33,12 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
 
 
     //events
-    event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 initialAmount,uint256 goalAmount,uint256 duration,bytes32 _poolId);    
+    event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 _index,uint256 initialAmount,uint256 goalAmount,uint256 duration,bytes32 _poolId);    
     event Withdraw(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);  
-    event UpdateSaving(address indexed user,address indexed _tokenAddress, uint256 amount,bytes32 _poolId);
+    event UpdateSaving(address indexed user,address indexed _tokenAddress,uint256 _index ,uint256 amount,bytes32 _poolId);
 
     //Mapping
-    mapping(address => SavingPool) public userSavingPool;
+    mapping(uint256 _poolIndex => SavingPool) public userSavingPool;
     mapping(bytes32 => SavingPool) public poolSavingPool;
     mapping(address => mapping(bytes32 => uint256)) public userPoolBalance;
    
@@ -52,7 +56,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
      */
     function openSavingPool(address _tokenTosaveWith,uint256 _savedAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration) onlyAllowedTokens(_tokenTosaveWith) external{
        if (_savedAmount <= 0){
-        revert ZerorInitialAmount(_savedAmount);
+        revert ZeroAmount(_savedAmount);
        }
        if (_goalAmount <= 0){
         revert ZeroGoalAmount(_goalAmount);
@@ -60,6 +64,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
         if (_duration <= 0){
             revert ZeroDuration(_duration);
             }
+            uint256 _index  = poolCount;
             
        bytes32 _poolId = LibChainCoopSaving.generatePoolIndex(
         msg.sender,       
@@ -68,18 +73,37 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
     );
     
     SavingPool memory pool = SavingPool({saver:msg.sender,tokenToSaveWith:_tokenTosaveWith,Reason:_reason,poolIndex:_poolId,goalAmount:_goalAmount,Duration:_duration,amountSaved:_savedAmount,isGoalAccomplished:false});
-    userSavingPool[msg.sender] = pool;
+    userSavingPool[_index] = pool;
     poolSavingPool[_poolId] = pool;
     userPoolBalance[msg.sender][_poolId] = _savedAmount;
     poolCount++;
-    emit OpenSavingPool(msg.sender,_tokenTosaveWith,_savedAmount,_goalAmount,_duration,_poolId);
+    emit OpenSavingPool(msg.sender,_tokenTosaveWith,_index,_savedAmount,_goalAmount,_duration,_poolId);
 
         
     }
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
-    function updateSaving(uint256 _amount)external{}
+   
+    function updateSaving(uint256 _index,uint256 _amount)external{
+        
+        if(userSavingPool[_index].saver != msg.sender){
+            revert NotPoolOwner(msg.sender,userSavingPool[_index].poolIndex);
+        }
+        if(_amount <= 0){
+            revert ZeroAmount(_amount);
+            }
+           SavingPool storage pool = userSavingPool[_index];
+           pool.amountSaved += _amount;
+           if(pool.amountSaved >= pool.goalAmount){
+            pool.isGoalAccomplished = true;
+           }
+          
+           emit UpdateSaving(msg.sender,pool.tokenToSaveWith, _index, _amount,pool.poolIndex);
+
+            
+            
+    }
 
     function withdraw()external view returns(bytes32){}
   
