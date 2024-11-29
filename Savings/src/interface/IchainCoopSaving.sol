@@ -47,7 +47,7 @@ interface IChainCoopSaving{
     /***
      * @notice get pool by the creator address
      * **/
-    function getSavingPoolBySaver(address _saver)external view returns(SavingPool memory);
+    function getSavingPoolBySaver(address _saver)external view returns(SavingPool[] memory);
 
 }
 

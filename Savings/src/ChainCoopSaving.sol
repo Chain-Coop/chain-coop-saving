@@ -123,7 +123,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
                     //take some penalty fee i.e 1 %
                     //transfer penalty fee to the contract owner
                     //transfer remaining amount to the user
-                    
+
                 }
                 
                 
@@ -136,17 +136,44 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
     /****
      * @notice Get All total number of  pools created 
      */
-    function getSavingPoolCount()external view returns(uint256){}
+    function getSavingPoolCount()external view returns(uint256){
+        return poolCount;
+
+    }
     /***
      * @notice get pool by index
      * @param _poolIndex Index of the pool to get
      * 
      * **/
+     /****Can remove this after some considerations ?????????? */
     function getSavingPoolByIndex(bytes32 _index)external view returns(SavingPool memory){}
     /***
      * @notice get pool by the creator address
      * **/
-    function getSavingPoolBySaver(address _saver)external view returns(SavingPool memory){}
+    function getSavingPoolBySaver(address _saver)external view returns(SavingPool[] memory pools){
+        uint256 userPoolCount = 0;
+
+   
+    for (uint256 i = 0; i < poolCount; i++) {
+        if (userSavingPool[i].saver == _saver) {
+            userPoolCount++;
+        }
+    }
+
+    
+    pools = new SavingPool[](userPoolCount);
+    uint256 index = 0;
+
+    // Populate the array with the user's pools
+    for (uint256 i = 0; i < poolCount; i++) {
+        if (userSavingPool[i].saver == _saver) {
+            pools[index] = userSavingPool[i];
+            index++;
+        }
+    }
+        
+
+    }
 
     
 }
