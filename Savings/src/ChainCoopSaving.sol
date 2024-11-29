@@ -85,7 +85,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
      * @notice Allow adding funds to an existing saving pool
      */
    
-    function updateSaving(uint256 _index,uint256 _amount)external{
+    function updateSaving(uint256 _index,uint256 _amount)external {
         
         if(userSavingPool[_index].saver != msg.sender){
             revert NotPoolOwner(msg.sender,userSavingPool[_index].poolIndex);
