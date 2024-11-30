@@ -113,7 +113,8 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
             }
             if(pool.isGoalAccomplished){
                 //return all erc20 token to the user
-                //saved amount to zeror
+                //saved amount to zero
+                //transfer
 
                 pool.amountSaved = 0;
                 

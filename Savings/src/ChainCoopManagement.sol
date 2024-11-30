@@ -46,5 +46,7 @@ contract ChainCoopManagement {
 
     }
 
+    //function for setting fee
+
     
 }

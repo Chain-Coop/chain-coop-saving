@@ -12,9 +12,11 @@ import {ChainCoopManagement} from "../ChainCoopManagement.sol";
 //import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 contract YieldErc20_BreadToken is ERC20{
     uint256 constant Decimals = 10**18;
+    address owner;
     
    
-    constructor(address _management)ERC20("Bread","BR"){
+    constructor()ERC20("Bread","BR"){
+        owner = msg.sender;
         
         
     }
@@ -27,14 +29,18 @@ contract YieldErc20_BreadToken is ERC20{
      * TODO
      * // Ensure that only the owner can mint
      */
-    function mint(address to, uint256 amount) public {       
+    modifier onlyOwner(){
+        require(owner == msg.sender,"only owner");
+        _;
+    }
+    function mint(address to, uint256 amount) public  onlyOwner(){       
         
         _mint(to, amount*Decimals);
     }
     function burn(address from, uint256 amount) public {
         _burn(from, amount*Decimals);
         }
-        
+
         
     
 }
