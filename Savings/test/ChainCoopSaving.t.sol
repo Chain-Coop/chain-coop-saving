@@ -58,6 +58,17 @@ contract SavingTest is Test {
 
 
     }
+    //create pool and return the poolid
+    function test_create_pool() public returns(bytes32) {
+        vm.prank(user2);
+        // Create a new pool
+         saving.openSavingPool(address(breadToken), 10, 1000, "Buy a laptop",100);
+         ChainCoopSaving.SavingPool[] memory pools = saving.getSavingPoolBySaver(user2);
+         bytes32 poolId = pools[0].poolIndex;
+         return poolId;
+         }
+        
+
     //test failed to openpool
    function testfail_to_open_pool() public {   
     vm.expectRevert("Only allowed tokens");
@@ -82,6 +93,18 @@ function test_get_user_pools() public {
     assertEq(pools[0].Duration, 100, "Duration mismatch");
     
     
+}
+
+function test_update_pool_balance()public{
+   
+    // Open a new saving pool
+    bytes32 _poolId = test_create_pool();
+   
+    vm.prank(user2);
+   saving.updateSaving(_poolId, 100);
+   (,,,,,, uint256 amountSaved,) = saving.poolSavingPool(_poolId);
+
+    assertEq(amountSaved, 110, "Balance not incremented correctly after second update");
 }
 
 
