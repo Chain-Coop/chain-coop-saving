@@ -35,7 +35,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
     //events
     event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 _index,uint256 initialAmount,uint256 goalAmount,uint256 duration,bytes32 _poolId);    
     event Withdraw(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);  
-    event UpdateSaving(address indexed user,address indexed _tokenAddress,uint256 _index ,uint256 amount,bytes32 _poolId);
+    event UpdateSaving(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);
 
     //Mapping
     mapping(uint256 _poolIndex => SavingPool) public userSavingPool;
@@ -85,26 +85,27 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
      * @notice Allow adding funds to an existing saving pool
      */
    
-    function updateSaving(uint256 _index,uint256 _amount)external {
+    function updateSaving(bytes32 _poolId,uint256 _amount)external {
         
-        if(userSavingPool[_index].saver != msg.sender){
-            revert NotPoolOwner(msg.sender,userSavingPool[_index].poolIndex);
+        if(poolSavingPool[_poolId].saver != msg.sender){
+            revert NotPoolOwner(msg.sender,poolSavingPool[_poolId].poolIndex);
         }
         if(_amount <= 0){
             revert ZeroAmount(_amount);
             }
-           SavingPool storage pool = userSavingPool[_index];
+           SavingPool storage pool = poolSavingPool[_poolId];
            pool.amountSaved += _amount;
            if(pool.amountSaved >= pool.goalAmount){
             pool.isGoalAccomplished = true;
            }
           
-           emit UpdateSaving(msg.sender,pool.tokenToSaveWith, _index, _amount,pool.poolIndex);
+           emit UpdateSaving(msg.sender,pool.tokenToSaveWith, _amount,pool.poolIndex);
 
             
             
     }
 
+//use poolId => bytes32
 //prevent reentrancy attack
     function withdraw(uint256 _index)external {
         SavingPool storage pool = userSavingPool[_index];

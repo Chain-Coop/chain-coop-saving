@@ -27,7 +27,7 @@ interface IChainCoopSaving{
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
-    function updateSaving(uint256 _poolIndex,uint256 _amount)external;
+    function updateSaving(bytes32 _poolIndex,uint256 _amount)external;
     /*****
      * @notice Allow withdrawing funds from an existing saving pool
      * 
