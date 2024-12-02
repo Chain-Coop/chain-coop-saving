@@ -11,7 +11,7 @@ import {ChainCoopManagement} from "../ChainCoopManagement.sol";
 //import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 //import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 contract YieldErc20_BreadToken is ERC20{
-    uint256 constant Decimals = 10**18;
+    uint256 public  constant Decimals = 10**18;
     address owner;
     
    
