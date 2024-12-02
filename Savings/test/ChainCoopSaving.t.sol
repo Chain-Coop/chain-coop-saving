@@ -59,13 +59,32 @@ contract SavingTest is Test {
 
     }
     //test failed to openpool
-   function testfail_to_open_pool() public {
-    // Expect the next call to revert with a specific error message
+   function testfail_to_open_pool() public {   
     vm.expectRevert("Only allowed tokens");
 
-    // Attempt to open a new saving pool with invalid parameters
+   
     saving.openSavingPool(user4, 10, 1000, "Buy A new Meme Coin", 100);
 }
+//get userPools
+function test_get_user_pools() public {
+    // Open a new saving pool
+    vm.prank(user2);
+    saving.openSavingPool(address(breadToken), 10, 1000, "Buy a laptop",100);
+    ChainCoopSaving.SavingPool[] memory pools = saving.getSavingPoolBySaver(user2);
+     assertEq(pools.length, 1, "User should have one saving pool");
+    
+    // Validate the details of the created saving pool
+    assertEq(pools[0].saver, user2, "Saver address mismatch");
+    assertEq(pools[0].tokenToSaveWith, address(breadToken), "Token address mismatch");
+    assertEq(pools[0].amountSaved, 10, "Minimum deposit mismatch");
+    assertEq(pools[0].goalAmount, 1000, "Target amount mismatch");
+    assertEq(pools[0].Reason, "Buy a laptop", "Description mismatch");
+    assertEq(pools[0].Duration, 100, "Duration mismatch");
+    
+    
+}
+
+
     
 
 }
