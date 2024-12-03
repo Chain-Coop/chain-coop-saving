@@ -107,6 +107,20 @@ function test_update_pool_balance()public{
     assertEq(amountSaved, 110, "Balance not incremented correctly after second update");
 }
 
+//update pool to completion
+function test_update_pool_to_completion() public {
+    // Open a new saving pool
+    bytes32 _poolId = test_create_pool();
+    // Update the pool balance to reach the goal amount
+    vm.prank(user2);
+    saving.updateSaving(_poolId, 990);
+    // Validate the pool status
+    (,,,,,, uint256 amountSaved,bool isGoalAccomplished) = saving.poolSavingPool(_poolId);
+    assertEq(amountSaved, 1000, "Pool balance not updated correctly to reach goal amount");
+    assertEq(isGoalAccomplished,true, "Incomplete Saving round");
+    }
+    
+
 
     
 
