@@ -4,6 +4,7 @@ pragma solidity ^0.8.25;
 import {Test, console} from "forge-std/Test.sol";
 import {ChainCoopSaving} from "../src/ChainCoopSaving.sol";
 import {YieldErc20_BreadToken} from "../src/mock/YieldErc20_BreadToken.sol";
+//import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 contract SavingTest is Test {
     ChainCoopSaving public saving;
@@ -24,16 +25,17 @@ contract SavingTest is Test {
         user1 = address(2);
         user2 = address(3);
         user3 = address(4);
-        breadToken.mint(user1,100);
-        breadToken.mint(user2,100);
-        breadToken.mint(user3,100);
+        breadToken.mint(user1,1000);
+        breadToken.mint(user2,1000);
+        breadToken.mint(user3,1000);
+        breadToken.mint(address(this),1000);
 
     }
 
     function test_user_balance_is_zero() public {
         // Ensure initial balance of the test contract is zero
         vm.prank(user2);
-        assertEq(breadToken.balanceOf(user2), 100*10**18);
+        assertEq(breadToken.balanceOf(user2), 1000*10**18);
     }
     //mint token
     
@@ -50,7 +52,13 @@ contract SavingTest is Test {
     //address _tokenTosaveWith,uint256 _savedAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration
     function test_openSavingPool() public {
         // Open a new saving pool
+      vm.startPrank(user3);
+        
+       breadToken.approve(address(saving),10);
+       
+        
         saving.openSavingPool(address(breadToken), 10, 1000, "Buy A new Meme Coin",100);
+        vm.stopPrank();
 
         // Check that the pool has been created
         assertEq(saving.poolCount(), 1);
@@ -60,10 +68,13 @@ contract SavingTest is Test {
     }
     //create pool and return the poolid
     function test_create_pool() public returns(bytes32) {
-        vm.prank(user2);
+        vm.startPrank(user2);
         // Create a new pool
+        breadToken.approve(address(saving),10);
          saving.openSavingPool(address(breadToken), 10, 1000, "Buy a laptop",100);
          ChainCoopSaving.SavingPool[] memory pools = saving.getSavingPoolBySaver(user2);
+         vm.stopPrank();
+
          bytes32 poolId = pools[0].poolIndex;
          return poolId;
          }
@@ -79,9 +90,11 @@ contract SavingTest is Test {
 //get userPools
 function test_get_user_pools() public {
     // Open a new saving pool
-    vm.prank(user2);
+    vm.startPrank(user2);
+    breadToken.approve(address(saving),10);
     saving.openSavingPool(address(breadToken), 10, 1000, "Buy a laptop",100);
     ChainCoopSaving.SavingPool[] memory pools = saving.getSavingPoolBySaver(user2);
+    vm.stopPrank();
      assertEq(pools.length, 1, "User should have one saving pool");
     
     // Validate the details of the created saving pool
@@ -100,9 +113,11 @@ function test_update_pool_balance()public{
     // Open a new saving pool
     bytes32 _poolId = test_create_pool();
    
-    vm.prank(user2);
+    vm.startPrank(user2);
+    breadToken.approve(address(saving), 100);
    saving.updateSaving(_poolId, 100);
    (,,,,,, uint256 amountSaved,) = saving.poolSavingPool(_poolId);
+   vm.stopPrank();
 
     assertEq(amountSaved, 110, "Balance not incremented correctly after second update");
 }
@@ -112,10 +127,12 @@ function test_update_pool_to_completion() public {
     // Open a new saving pool
     bytes32 _poolId = test_create_pool();
     // Update the pool balance to reach the goal amount
-    vm.prank(user2);
+    vm.startPrank(user2);
+    breadToken.approve(address(saving), 990);
     saving.updateSaving(_poolId, 990);
     // Validate the pool status
     (,,,,,, uint256 amountSaved,bool isGoalAccomplished) = saving.poolSavingPool(_poolId);
+    vm.stopPrank();
     assertEq(amountSaved, 1000, "Pool balance not updated correctly to reach goal amount");
     assertEq(isGoalAccomplished,true, "Incomplete Saving round");
     }
