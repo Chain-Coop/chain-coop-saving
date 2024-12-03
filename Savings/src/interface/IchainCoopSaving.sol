@@ -16,6 +16,7 @@ interface IChainCoopSaving{
         uint256 Duration;        
         uint256 amountSaved;    
         bool isGoalAccomplished;
+    
 
     }
 
@@ -32,7 +33,7 @@ interface IChainCoopSaving{
      * @notice Allow withdrawing funds from an existing saving pool
      * 
      * */
-    function withdraw(uint256 _index)external;
+    function withdraw(bytes32 _poolId)external;
   
     /****
      * @notice Get All total number of  pools created 

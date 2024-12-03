@@ -4,9 +4,8 @@ import {IChainCoopSaving} from "./interface/IchainCoopSaving.sol";
 import {LibChainCoopSaving} from  "./lib/LibChainCoopSaving.sol";
 import "./ChainCoopManagement.sol";
 
- /*****TODO
-     * Add IERC20 Interface
-     */
+
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 //import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
@@ -71,6 +70,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
         block.timestamp,   
         _goalAmount        
     );
+     require(IERC20(_tokenTosaveWith).transferFrom(msg.sender,address(this),_savedAmount),"failed to deposit");
     
     SavingPool memory pool = SavingPool({saver:msg.sender,tokenToSaveWith:_tokenTosaveWith,Reason:_reason,poolIndex:_poolId,goalAmount:_goalAmount,Duration:_duration,amountSaved:_savedAmount,isGoalAccomplished:false});
     userSavingPool[_index] = pool;
@@ -93,7 +93,10 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
         if(_amount <= 0){
             revert ZeroAmount(_amount);
             }
+            
+           
            SavingPool storage pool = poolSavingPool[_poolId];
+            require(IERC20(pool.tokenToSaveWith).transferFrom(msg.sender,address(this),_amount),"failed to deposit");
            pool.amountSaved += _amount;
            if(pool.amountSaved >= pool.goalAmount){
             pool.isGoalAccomplished = true;
@@ -105,26 +108,49 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
             
     }
 
-//use poolId => bytes32
-//prevent reentrancy attack
-    function withdraw(uint256 _index)external {
-        SavingPool storage pool = userSavingPool[_index];
+
+
+/*****
+ * TODO
+ * //prevent reentrancy attack
+ */
+
+/****
+ * @notice Allow withdrawing funds from an existing saving pool
+ * @param    poolId => bytes32
+ * transfer penalty fee to the contract owner
+    *transfer remaining amount to the user
+ */
+    function withdraw(bytes32 _poolId)external {
+        SavingPool storage pool = poolSavingPool[_poolId];
         if(pool.saver != msg.sender){
             revert NotPoolOwner(msg.sender,pool.poolIndex);
             }
             if(pool.isGoalAccomplished){
                 //return all erc20 token to the user
+                require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,pool.amountSaved),"failed to transfer");
                 //saved amount to zero
-                //transfer
+                pool.amountSaved = 0;           
 
-                pool.amountSaved = 0;
+                
                 
                 }else{
-                    //return all erc20 token to the user
+                     //take some penalty fee i.e 0.03%
+                    uint256 interest = LibChainCoopSaving.calculateInterest(pool.amountSaved);
+                    uint256 amountReturnToUser = pool.amountSaved - interest;
+                    
+                    require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,amountReturnToUser),"Failed to transfer");
+                    /***
+                     * TODO //change the address(1) to he chaincoop escrow
+                     */
+                    
+                      require(IERC20(pool.tokenToSaveWith).transfer(address(1),interest),"Failed to transfer");
+
                     //saved amount to zeror
-                    //take some penalty fee i.e 1 %
-                    //transfer penalty fee to the contract owner
-                    //transfer remaining amount to the user
+                    pool.amountSaved = 0;
+                   
+                    
+                   
 
                 }
                 

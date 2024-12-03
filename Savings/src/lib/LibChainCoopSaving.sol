@@ -9,4 +9,11 @@ library LibChainCoopSaving{
 
     }
 
+    //calculate interest of 0.03 %
+   function calculateInterest(uint256 _principal) public pure returns(uint256) {
+    uint256 interest = (_principal * 3 * 100) / 10000; // Increased precision with 100 multiplier
+    return interest;
+}
+
+
 }
