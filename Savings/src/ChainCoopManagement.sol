@@ -6,11 +6,13 @@ pragma solidity ^0.8.25;
 contract ChainCoopManagement {
 
     address public owner;
+    address public chainCoopFees;
     
    
     // Events
     event AllowToken(address _updator,address _allowedToken);
     event AdminChanged(address previousAdmin,address newAdmin);
+    event ChainCoopFeesChanged(address indexed previousChainCoopFees,address indexed newChainCoopFees,address indexed _ownerChanged);
     //mapping
     mapping(address => bool) public isTokenAllowed;
 
@@ -45,8 +47,15 @@ contract ChainCoopManagement {
         emit AllowToken(msg.sender,_tokenAddress);
 
     }
+    function removeAllowedTokens(address _tokenAddress)external onlyOwner{
+        isTokenAllowed[_tokenAddress] =true;
+        emit AllowToken(msg.sender,_tokenAddress);
+        }
+    function setChainCoopAddress(address _chaincoopfees)external onlyOwner{
+        chainCoopFees = _chaincoopfees;
+        emit ChainCoopFeesChanged(chainCoopFees,_chaincoopfees,msg.sender);
 
-    //function for setting fee
+    }  
 
     
 }
