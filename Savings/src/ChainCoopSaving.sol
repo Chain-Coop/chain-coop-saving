@@ -138,12 +138,9 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
                     uint256 interest = LibChainCoopSaving.calculateInterest(pool.amountSaved);
                     uint256 amountReturnToUser = pool.amountSaved - interest;
                     
-                    require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,amountReturnToUser),"Failed to transfer");
-                    /***
-                     * TODO //change the address(1) to he chaincoop escrow
-                     */
+                    require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,amountReturnToUser),"Failed to transfer");                   
                     
-                      require(IERC20(pool.tokenToSaveWith).transfer(address(1),interest),"Failed to transfer");
+                      require(IERC20(pool.tokenToSaveWith).transfer(chainCoopFees,interest),"Failed to transfer");
 
                     //saved amount to zeror
                     pool.amountSaved = 0;
