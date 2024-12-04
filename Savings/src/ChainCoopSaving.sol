@@ -6,6 +6,8 @@ import "./ChainCoopManagement.sol";
 
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 //import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
@@ -15,7 +17,7 @@ error ZeroDuration(uint256 _duration);
 error ZeroGoalAmount(uint256  _goalamount);
 error NotPoolOwner(address _caller,bytes32 _poolId);
 
-contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
+contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard{
     using LibChainCoopSaving for address;
    
 
@@ -110,10 +112,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
 
 
 
-/*****
- * TODO
- * //prevent reentrancy attack
- */
+
 
 /****
  * @notice Allow withdrawing funds from an existing saving pool
@@ -121,7 +120,7 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement{
  * transfer penalty fee to the contract owner
     *transfer remaining amount to the user
  */
-    function withdraw(bytes32 _poolId)external {
+    function withdraw(bytes32 _poolId)external nonReentrant {
         SavingPool storage pool = poolSavingPool[_poolId];
         if(pool.saver != msg.sender){
             revert NotPoolOwner(msg.sender,pool.poolIndex);
