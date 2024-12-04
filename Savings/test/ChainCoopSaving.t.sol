@@ -157,20 +157,44 @@ function test_withdraw_before_completion() public {
     assertEq(isGoalAccomplished,false,"Failed to Accomplish");
     //check balance before withdraw
     uint256 bal = breadToken.balanceOf(user2);
-    assertEq(bal,((1000*10**18)-910),"Incorect Balance amount since initialdeposit was 10, then 900 for update remaining (1000-(900+10)) =90");
+    assertEq(bal,((1000*10**18)-amountSaved),"Incorect Balance amount since initialdeposit was 10, then 900 for update remaining (1000-(900+10)) =90");
     //withdraw
     saving.withdraw(_poolId);
     //balance after withdraw
     bal = breadToken.balanceOf(chaincoopFees);
     //get 0.03 %
-    uint256 fee = LibChainCoopSaving.calculateInterest(910);
+    uint256 fee = LibChainCoopSaving.calculateInterest(amountSaved);
     assertEq(bal,fee);
     
    
     vm.stopPrank();
-   
-
-    
+       
 
 }
+
+//withdrawing after saving completion
+function test_withdraw_after_completion() public {
+   // Open a new saving pool
+    bytes32 _poolId = test_create_pool();
+    // Update the pool balance to reach the goal amount
+    vm.startPrank(user2);
+    breadToken.approve(address(saving), 990);
+    saving.updateSaving(_poolId, 990);
+    // Validate the pool status
+    (,,,,,, uint256 amountSaved,bool isGoalAccomplished) = saving.poolSavingPool(_poolId);
+    assertEq(amountSaved,1000,"Wrong Amount Saved");
+    assertEq(isGoalAccomplished,true,"Failed to Accomplish");
+    //check balance before withdraw
+    uint256 bal = breadToken.balanceOf(user2);
+    assertEq(bal,((1000*10**18)-amountSaved),"Incorect Balance amount since initialdeposit was 10, then 900 for update remaining (1000-(900+10)) =90");
+    //withdraw
+    saving.withdraw(_poolId);
+    //balance after withdraw
+    bal = breadToken.balanceOf(chaincoopFees);
+    //get 0.03 %
+    uint256 fee = LibChainCoopSaving.calculateInterest(0);
+    assertEq(bal,fee);
+    
+   
+    vm.stopPrank();}
 }
