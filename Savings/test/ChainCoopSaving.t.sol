@@ -4,9 +4,11 @@ pragma solidity ^0.8.25;
 import {Test, console} from "forge-std/Test.sol";
 import {ChainCoopSaving} from "../src/ChainCoopSaving.sol";
 import {YieldErc20_BreadToken} from "../src/mock/YieldErc20_BreadToken.sol";
+import {LibChainCoopSaving} from "../src/lib/LibChainCoopSaving.sol";
 
 
 contract SavingTest is Test {
+     using LibChainCoopSaving for address;
     ChainCoopSaving public saving;
     YieldErc20_BreadToken public breadToken;
     address public owner;
@@ -14,6 +16,7 @@ contract SavingTest is Test {
     address user2;
     address user3;
     address user4;
+    address chaincoopFees;
 
 
     function setUp() public {
@@ -21,10 +24,13 @@ contract SavingTest is Test {
         breadToken = new YieldErc20_BreadToken();
         saving = new ChainCoopSaving(address(breadToken));
         saving.setAllowedTokens(address(breadToken));
+       
         owner = address(1);
         user1 = address(2);
         user2 = address(3);
         user3 = address(4);
+        chaincoopFees = address(5);
+         saving.setChainCoopAddress(chaincoopFees);
         breadToken.mint(user1,1000);
         breadToken.mint(user2,1000);
         breadToken.mint(user3,1000);
@@ -41,7 +47,7 @@ contract SavingTest is Test {
     
 
     //management
-    function test_set_allow_token() public {
+    function test_set_allow_token() public view {
         // Set the token to be allowed
         
         
@@ -137,8 +143,34 @@ function test_update_pool_to_completion() public {
     assertEq(isGoalAccomplished,true, "Incomplete Saving round");
     }
     
-
+//withdraw before completion
+function test_withdraw_before_completion() public {
+    // Open a new saving pool
+    bytes32 _poolId = test_create_pool();
+    // Update the pool balance to reach the goal amount
+    vm.startPrank(user2);
+    breadToken.approve(address(saving), 900);
+    saving.updateSaving(_poolId, 900);
+    // Validate the pool status
+    (,,,,,, uint256 amountSaved,bool isGoalAccomplished) = saving.poolSavingPool(_poolId);
+    assertEq(amountSaved,910,"Wrong Amount Saved");
+    assertEq(isGoalAccomplished,false,"Failed to Accomplish");
+    //check balance before withdraw
+    uint256 bal = breadToken.balanceOf(user2);
+    assertEq(bal,((1000*10**18)-910),"Incorect Balance amount since initialdeposit was 10, then 900 for update remaining (1000-(900+10)) =90");
+    //withdraw
+    saving.withdraw(_poolId);
+    //balance after withdraw
+    bal = breadToken.balanceOf(chaincoopFees);
+    //get 0.03 %
+    uint256 fee = LibChainCoopSaving.calculateInterest(910);
+    assertEq(bal,fee);
+    
+   
+    vm.stopPrank();
+   
 
     
 
+}
 }
