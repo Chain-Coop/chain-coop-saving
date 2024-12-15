@@ -10,3 +10,12 @@ Transaction hash: 0xcd8c35d8e297531a5042e845ab608dad71a3641b3213e681f44b24f55449
 //ALLOWED TOKEN
 ->LSK TOKEN on L2
  0x8a21CF9Ba08Ae709D64Cb25AfAA951183EC9FF6D
+
+ //verify command
+ forge verify-contract \
+  --rpc-url https://rpc.sepolia-api.lisk.com \
+  --etherscan-api-key  <PRIVATE_KEY> \
+  --verifier blockscout \
+  --verifier-url https://sepolia-blockscout.lisk.com/api \
+  0xbbB1C0d4C4406D5ecD8983abc06Bca7C9330f58e \
+  src/ChainCoopSaving.sol:ChainCoopSaving
