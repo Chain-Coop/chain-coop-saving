@@ -38,10 +38,15 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
     event Withdraw(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);  
     event UpdateSaving(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);
 
+    struct Contribution {
+        address tokenAddress;
+        uint256 amount;
+    }
     //Mapping
     mapping(uint256 _poolIndex => SavingPool) public userSavingPool;
     mapping(bytes32 => SavingPool) public poolSavingPool;
     mapping(address => mapping(bytes32 => uint256)) public userPoolBalance;
+    mapping(address => bytes32[]) public userContributedPools;
    
    //Pool Count
    uint256 public poolCount = 0;
@@ -75,10 +80,12 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
      require(IERC20(_tokenTosaveWith).transferFrom(msg.sender,address(this),_savedAmount),"failed to deposit");
     
     SavingPool memory pool = SavingPool({saver:msg.sender,tokenToSaveWith:_tokenTosaveWith,Reason:_reason,poolIndex:_poolId,goalAmount:_goalAmount,Duration:_duration,amountSaved:_savedAmount,isGoalAccomplished:false});
+    poolCount++;
     userSavingPool[_index] = pool;
     poolSavingPool[_poolId] = pool;
-    userPoolBalance[msg.sender][_poolId] = _savedAmount;
-    poolCount++;
+    userContributedPools[msg.sender].push(_poolId)
+    userPoolBalance[msg.sender][_poolId] += _savedAmount;
+   
     emit OpenSavingPool(msg.sender,_tokenTosaveWith,_index,_savedAmount,_goalAmount,_duration,_poolId);
 
         
@@ -195,9 +202,32 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
             index++;
         }
     }
+    }
+    function getUserContributions(address _saver) external view returns (Contribution[] memory contributions) {
+    uint256 userPoolCount = userContributedPools[_saver].length;
+
+    // Initialize the contributions array
+    contributions = new Contribution[](userPoolCount);
+
+    // Loop through the pools the user owns
+    for (uint256 i = 0; i < userPoolCount; i++) {
+        bytes32 poolId = userContributedPools[_saver][i]; // Retrieve the pool ID
+        SavingPool storage pool = poolSavingPool[poolId]; // Fetch the pool details
+
+        // Populate the contribution
+        contributions[i] = Contribution({
+            tokenAddress: pool.tokenToSaveWith,
+            amount: pool.amountSaved
+        });
+    }
+}
+
+
         
 
-    }
+    
+
+
 
     
 }
