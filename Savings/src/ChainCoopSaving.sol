@@ -8,7 +8,7 @@ import "./ChainCoopManagement.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-//import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
 
 
 error ZeroAmount(uint256 _amount);
@@ -16,6 +16,9 @@ error ZeroAmount(uint256 _amount);
 error ZeroDuration(uint256 _duration);
 error ZeroGoalAmount(uint256  _goalamount);
 error NotPoolOwner(address _caller,bytes32 _poolId);
+error StrictlySavingType(address _caller,bytes32 _poolId);
+error SavingPeriodStillOn(address _caller,bytes32 _poolId,uint256 _endDate);
+error PoolStoped(address _caller, bytes32 _poolid);
 
 contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard{
     using LibChainCoopSaving for address;
@@ -34,9 +37,11 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
 
 
     //events
-    event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 _index,uint256 initialAmount,uint256 goalAmount,uint256 duration,bytes32 _poolId);    
+    event OpenSavingPool(address indexed user,address indexed _tokenAddress,uint256 _index,uint256 initialAmount,uint256 startTime,LockingType,uint256 duration,bytes32 _poolId);    
     event Withdraw(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);  
     event UpdateSaving(address indexed user,address indexed _tokenAddress ,uint256 amount,bytes32 _poolId);
+     event RestartSaving(address _poolOwner,bytes32 _poolId);
+    event   StopSaving(address _poolOwner,bytes32 _poolId);
 
     struct Contribution {
         address tokenAddress;
@@ -60,33 +65,36 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
      * @notice Allow Opening a saving pool with initial contribution
      * 
      */
-    function openSavingPool(address _tokenTosaveWith,uint256 _savedAmount,uint256 _goalAmount,string calldata _reason,uint256 _duration) onlyAllowedTokens(_tokenTosaveWith) external{
+    function openSavingPool(address _tokenTosaveWith,uint256 _savedAmount,string calldata _reason,LockingType _locktype,uint256 _duration) onlyAllowedTokens(_tokenTosaveWith) external{
        if (_savedAmount <= 0){
         revert ZeroAmount(_savedAmount);
        }
-       if (_goalAmount <= 0){
-        revert ZeroGoalAmount(_goalAmount);
-        }
+       
         if (_duration <= 0){
             revert ZeroDuration(_duration);
             }
             uint256 _index  = poolCount;
+            //check lock type
+            bool accomplished;
+            if(_locktype == LockingType.FLEXIBLE){
+                accomplished = true;}
+               uint256  _starttime =block.timestamp;
             
        bytes32 _poolId = LibChainCoopSaving.generatePoolIndex(
         msg.sender,       
         block.timestamp,   
-        _goalAmount        
+        _savedAmount       
     );
      require(IERC20(_tokenTosaveWith).transferFrom(msg.sender,address(this),_savedAmount),"failed to deposit");
     
-    SavingPool memory pool = SavingPool({saver:msg.sender,tokenToSaveWith:_tokenTosaveWith,Reason:_reason,poolIndex:_poolId,goalAmount:_goalAmount,Duration:_duration,amountSaved:_savedAmount,isGoalAccomplished:false});
+    SavingPool memory pool = SavingPool({saver:msg.sender,tokenToSaveWith:_tokenTosaveWith,Reason:_reason,poolIndex:_poolId,startDate:_starttime,Duration:_duration,amountSaved:_savedAmount,locktype:_locktype,isGoalAccomplished:accomplished,isStoped:false});
     poolCount++;
     userSavingPool[_index] = pool;
     poolSavingPool[_poolId] = pool;
     userContributedPools[msg.sender].push(_poolId);
     userPoolBalance[msg.sender][_poolId] += _savedAmount;
    
-    emit OpenSavingPool(msg.sender,_tokenTosaveWith,_index,_savedAmount,_goalAmount,_duration,_poolId);
+    emit OpenSavingPool(msg.sender,_tokenTosaveWith,_index,_savedAmount,_starttime,_locktype,_duration,_poolId);
 
         
     }
@@ -99,6 +107,12 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
         if(poolSavingPool[_poolId].saver != msg.sender){
             revert NotPoolOwner(msg.sender,poolSavingPool[_poolId].poolIndex);
         }
+        if (poolSavingPool[_poolId].isStoped){
+            revert PoolStoped(msg.sender, _poolId);
+        }        
+        if(poolSavingPool[_poolId].locktype == LockingType.STRICTLOCK){
+            revert StrictlySavingType(msg.sender,_poolId);
+        }
         if(_amount <= 0){
             revert ZeroAmount(_amount);
             }
@@ -107,9 +121,14 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
            SavingPool storage pool = poolSavingPool[_poolId];
             require(IERC20(pool.tokenToSaveWith).transferFrom(msg.sender,address(this),_amount),"failed to deposit");
            pool.amountSaved += _amount;
-           if(pool.amountSaved >= pool.goalAmount){
+           if (pool.locktype == LockingType.LOCK){
+             if(pool.Duration <= block.timestamp){
             pool.isGoalAccomplished = true;
            }
+
+           }
+
+          
           
            emit UpdateSaving(msg.sender,pool.tokenToSaveWith, _amount,pool.poolIndex);
 
@@ -118,7 +137,23 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
     }
 
 
+ //Stop Saving 
+    function stopSaving(bytes32 _poolId)external{
+        if(poolSavingPool[_poolId].saver != msg.sender){
+            revert NotPoolOwner(msg.sender,poolSavingPool[_poolId].poolIndex);
+            }
+            poolSavingPool[_poolId].isStoped = true;
+            emit StopSaving(msg.sender,_poolId);
+    }
 
+    //Restart Saving
+    function restartSaving(bytes32 _poolId)external{
+        if(poolSavingPool[_poolId].saver != msg.sender){
+            revert NotPoolOwner(msg.sender,poolSavingPool[_poolId].poolIndex);
+            }
+            poolSavingPool[_poolId].isStoped = false;
+            emit RestartSaving(msg.sender,_poolId);
+    }
 
 
 /****
@@ -132,6 +167,22 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
         if(pool.saver != msg.sender){
             revert NotPoolOwner(msg.sender,pool.poolIndex);
             }
+
+            //for strictly locked
+            if(pool.locktype == LockingType.STRICTLOCK){
+                if (pool.Duration > block.timestamp){
+                 revert SavingPeriodStillOn(msg.sender,_poolId,pool.Duration);
+                }else{
+                     //return all erc20 token to the user
+                        //saved amount to zero
+                     pool.amountSaved = 0;   
+                     pool.isGoalAccomplished =true;
+                require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,pool.amountSaved),"failed to transfer");
+             
+                
+
+                }
+            }
             if(pool.isGoalAccomplished){
                 //return all erc20 token to the user
                 require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,pool.amountSaved),"failed to transfer");
@@ -144,13 +195,14 @@ contract ChainCoopSaving is IChainCoopSaving,ChainCoopManagement,ReentrancyGuard
                      //take some penalty fee i.e 0.03%
                     uint256 interest = LibChainCoopSaving.calculateInterest(pool.amountSaved);
                     uint256 amountReturnToUser = pool.amountSaved - interest;
+                     //saved amount to zeror
+                    pool.amountSaved = 0;
                     
                     require(IERC20(pool.tokenToSaveWith).transfer(pool.saver,amountReturnToUser),"Failed to transfer");                   
                     
                       require(IERC20(pool.tokenToSaveWith).transfer(chainCoopFees,interest),"Failed to transfer");
 
-                    //saved amount to zeror
-                    pool.amountSaved = 0;
+                   
                    
                     
                    
