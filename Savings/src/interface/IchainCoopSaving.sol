@@ -2,16 +2,24 @@
 pragma solidity ^0.8.25;
 
 interface IChainCoopSaving {
+    //enum with locking
+    enum LockingType {
+        FLEXIBLE,
+        LOCK,
+        STRICTLOCK
+    }
+
     struct SavingPool {
         address saver;
         address tokenToSaveWith;
         string Reason;
         bytes32 poolIndex;
-        uint256 goalAmount;
+        uint256 startDate;
         uint256 Duration;
         uint256 amountSaved;
+        LockingType locktype;
         bool isGoalAccomplished;
-        bool isDeadlinePassed;
+        bool isStoped;
     }
 
     /***
@@ -21,19 +29,25 @@ interface IChainCoopSaving {
     function openSavingPool(
         address _tokenTosaveWith,
         uint256 _savedAmount,
-        uint256 _goalAmount,
         string calldata _reason,
+        LockingType _locktype,
         uint256 _duration
     ) external;
     /*****
      * @notice Allow adding funds to an existing saving pool
      */
-    function updateSaving(bytes32 _poolIndex, uint256 _amount) external;
+    function updateSaving(bytes32 _poolId, uint256 _amount) external;
     /*****
      * @notice Allow withdrawing funds from an existing saving pool
      *
      * */
     function withdraw(bytes32 _poolId) external;
+
+    //Stop Saving
+    function stopSaving(bytes32 _poolId) external;
+
+    //Restart Saving
+    function restartSaving(bytes32 _poolId) external;
 
     /****
      * @notice Get All total number of  pools created
