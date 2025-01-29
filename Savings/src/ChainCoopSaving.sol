@@ -7,6 +7,10 @@ import "./ChainCoopManagement.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+error ZeroAmount(uint256 _amount);
+
+error ZeroDuration(uint256 _duration);
 error ZeroGoalAmount(uint256 _goalamount);
 error NotPoolOwner(address _caller, bytes32 _poolId);
 error StrictlySavingType(address _caller, bytes32 _poolId);

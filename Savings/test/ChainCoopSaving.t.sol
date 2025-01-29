@@ -25,6 +25,7 @@ contract SavingTest is Test {
         bytes32 _poolId,
         uint256 _endDate
     );
+    error PoolDurationExpired(bytes32 _poolId);
 
     function setUp() public {
         // Deploy the mock token and main contract before each test
@@ -246,89 +247,219 @@ contract SavingTest is Test {
     }
 
     //withdraw before completion
-    // function test_withdraw_before_completion() public {
-    //     // Open a new saving pool
-    //     bytes32 _poolId = test_create_pool();
-    //     // Update the pool balance to reach the goal amount
-    //     vm.startPrank(user2);
-    //     breadToken.approve(address(saving), 900);
-    //     saving.updateSaving(_poolId, 900);
-    //     // Validate the pool status
-    //     (, , , , , , uint256 amountSaved, bool isGoalAccomplished) = saving
-    //         .poolSavingPool(_poolId);
-    //     assertEq(amountSaved, 910, "Wrong Amount Saved");
-    //     assertEq(isGoalAccomplished, false, "Failed to Accomplish");
-    //     //check balance before withdraw
-    //     uint256 bal = breadToken.balanceOf(user2);
-    //     assertEq(
-    //         bal,
-    //         ((1000 * 10 ** 18) - amountSaved),
-    //         "Incorect Balance amount since initialdeposit was 10, then 900 for update remaining (1000-(900+10)) =90"
-    //     );
-    //     //withdraw
-    //     saving.withdraw(_poolId);
-    //     //balance after withdraw
-    //     bal = breadToken.balanceOf(chaincoopFees);
-    //     //get 0.03 %
-    //     uint256 fee = LibChainCoopSaving.calculateInterest(amountSaved);
-    //     assertEq(bal, fee);
+    function test_withdraw_before_completion() public {
+        // Open a new saving pool with initial 10 tokens
+        bytes32 _poolId = test_create_pool();
 
-    //     vm.stopPrank();
-    // }
+        // Update the pool balance with 900 more tokens
+        vm.startPrank(user2);
+        breadToken.approve(address(saving), 900);
+        saving.updateSaving(_poolId, 900);
 
-    // function test_lock_pool_completion_after_duration() public {
-    //     // Open a LOCK type pool
-    //     vm.startPrank(user2);
-    //     breadToken.approve(address(saving), 10);
-    //     saving.openSavingPool(
-    //         address(breadToken),
-    //         10,
-    //         "Buy a laptop",
-    //         IChainCoopSaving.LockingType.LOCK,
-    //         100 days
-    //     );
-    //     bytes32 poolId = saving.getSavingPoolBySaver(user2)[0].poolIndex;
+        // Get pool status after update
+        ChainCoopSaving.SavingPool[] memory pools = saving.getSavingPoolBySaver(
+            user2
+        );
 
-    //     // Fast-forward time to after the duration
-    //     vm.warp(block.timestamp + 100 days + 1);
-    //     saving.withdraw(poolId);
+        // Verify total amount saved (10 + 900)
+        assertEq(pools[0].amountSaved, 910, "Wrong Amount Saved");
 
-    //     (, , , , , , , bool isGoalAccomplished) = saving.poolSavingPool(poolId);
-    //     assertTrue(
-    //         isGoalAccomplished,
-    //         "Pool should be completed after duration"
-    //     );
-    //     vm.stopPrank();
-    // }
+        // For FLEXIBLE type, isGoalAccomplished should be true by default
+        assertEq(
+            pools[0].isGoalAccomplished,
+            true,
+            "Should be accomplished for FLEXIBLE type"
+        );
 
-    // // withdrawing after saving completion
-    // function test_withdraw_after_completion() public {
-    //     // Open a new saving pool
-    //     bytes32 _poolId = test_create_pool();
-    //     // Update the pool balance to reach the goal amount
-    //     vm.startPrank(user2);
-    //     breadToken.approve(address(saving), 990);
-    //     saving.updateSaving(_poolId, 990);
-    //     // Validate the pool status
-    //     (, , , , , , uint256 amountSaved, bool isGoalAccomplished) = saving
-    //         .poolSavingPool(_poolId);
-    //     assertEq(amountSaved, 1000, "Wrong Amount Saved");
-    //     assertEq(isGoalAccomplished, true, "Failed to Accomplish");
-    //     //check balance before withdraw
-    //     uint256 bal = breadToken.balanceOf(user2);
-    //     assertEq(
-    //         bal,
-    //         ((1000 * 10 ** 18) - amountSaved),
-    //         "Incorect Balance amount since initialdeposit was 10, then 900 for update remaining (1000-(900+10)) =90"
-    //     );
-    //     //withdraw
-    //     saving.withdraw(_poolId);
-    //     //balance after withdraw
-    //     bal = breadToken.balanceOf(chaincoopFees);
-    //     //get 0.03 %
-    //     uint256 fee = LibChainCoopSaving.calculateInterest(0);
-    //     assertEq(bal, fee);
+        // Check user balance before withdraw (should be original 1000 - amount saved)
+        uint256 initialBalance = breadToken.balanceOf(user2);
 
-    //     vm.stopPrank();
-    // }
+        // Calculate expected balance: 1000 * 10^18 - 910
+        uint256 expectedBalance = (1000 * 10 ** 18) - 910;
+        assertEq(
+            initialBalance,
+            expectedBalance,
+            "Incorrect balance before withdrawal"
+        );
+
+        // Store contract's balance before withdrawal
+        uint256 contractBalanceBefore = breadToken.balanceOf(address(saving));
+
+        // Withdraw
+        saving.withdraw(_poolId);
+
+        // Check balances after withdrawal
+        uint256 userBalanceAfter = breadToken.balanceOf(user2);
+        uint256 contractBalanceAfter = breadToken.balanceOf(address(saving));
+
+        // For FLEXIBLE type, no penalty fee should be taken
+        assertEq(
+            userBalanceAfter,
+            initialBalance + 910,
+            "User should receive full amount"
+        );
+        assertEq(
+            contractBalanceAfter,
+            contractBalanceBefore - 910,
+            "Contract balance should decrease by full amount"
+        );
+
+        // Verify pool amount is zeroed
+        pools = saving.getSavingPoolBySaver(user2);
+        assertEq(
+            pools[0].amountSaved,
+            0,
+            "Pool amount should be zero after withdrawal"
+        );
+
+        vm.stopPrank();
+    }
+
+    function test_lock_pool_completion_after_duration() public {
+        // Open a LOCK type pool with 10 tokens
+        vm.startPrank(user2);
+        breadToken.approve(address(saving), 10);
+
+        uint256 startTime = block.timestamp;
+        uint256 duration = 100 days;
+
+        saving.openSavingPool(
+            address(breadToken),
+            10,
+            "Buy a laptop",
+            IChainCoopSaving.LockingType.LOCK,
+            duration
+        );
+
+        bytes32 poolId = saving.getSavingPoolBySaver(user2)[0].poolIndex;
+
+        // Verify initial state
+        ChainCoopSaving.SavingPool[] memory poolsBefore = saving
+            .getSavingPoolBySaver(user2);
+        assertEq(
+            poolsBefore[0].isGoalAccomplished,
+            false,
+            "Should not be accomplished initially"
+        );
+        assertEq(
+            poolsBefore[0].startDate,
+            startTime,
+            "Start time should match"
+        );
+        assertEq(poolsBefore[0].Duration, duration, "Duration should match");
+
+        // Store initial balances
+        uint256 userBalanceBefore = breadToken.balanceOf(user2);
+        uint256 contractBalanceBefore = breadToken.balanceOf(address(saving));
+
+        // Fast-forward time to just after the duration
+        vm.warp(startTime + duration + 1);
+
+        // Update the saving to trigger duration check
+        // This step is needed because the contract checks duration in updateSaving
+        breadToken.approve(address(saving), 5);
+        vm.expectRevert(
+            abi.encodeWithSelector(PoolDurationExpired.selector, poolId)
+        );
+        saving.updateSaving(poolId, 5);
+
+        // Withdraw
+        saving.withdraw(poolId);
+
+        // Check balances after withdrawal
+        uint256 userBalanceAfter = breadToken.balanceOf(user2);
+        uint256 contractBalanceAfter = breadToken.balanceOf(address(saving));
+
+        // Get final state
+        ChainCoopSaving.SavingPool[] memory poolsAfter = saving
+            .getSavingPoolBySaver(user2);
+
+        // Verify final state
+        assertTrue(
+            poolsAfter[0].isGoalAccomplished,
+            "Pool should be completed after duration"
+        );
+        assertEq(
+            poolsAfter[0].amountSaved,
+            0,
+            "Amount saved should be zero after withdrawal"
+        );
+
+        // For LOCK type after duration, user should receive full amount (no penalty)
+        assertEq(
+            userBalanceAfter,
+            userBalanceBefore + 10,
+            "User should receive full amount"
+        );
+        assertEq(
+            contractBalanceAfter,
+            contractBalanceBefore - 10,
+            "Contract balance should decrease by full amount"
+        );
+
+        vm.stopPrank();
+    }
+
+    // withdrawing after saving completion
+    function test_withdraw_after_completion() public {
+        // Open a new saving pool
+        bytes32 _poolId = test_create_pool();
+
+        // Update the pool balance
+        vm.startPrank(user2);
+        breadToken.approve(address(saving), 990);
+        saving.updateSaving(_poolId, 990);
+
+        // Get pool status after update
+        ChainCoopSaving.SavingPool[] memory pools = saving.getSavingPoolBySaver(
+            user2
+        );
+
+        // Validate the total amount saved (initial 10 + 990)
+        assertEq(pools[0].amountSaved, 1000, "Wrong Amount Saved");
+        assertEq(pools[0].isGoalAccomplished, true, "Failed to Accomplish");
+
+        // Check user balance before withdrawal
+        uint256 balanceBeforeWithdraw = breadToken.balanceOf(user2);
+        uint256 expectedBalance = (1000 * 10 ** 18) - 1000; // Total minted - total saved
+        assertEq(
+            balanceBeforeWithdraw,
+            expectedBalance,
+            "Incorrect balance before withdrawal"
+        );
+
+        // Store initial chaincoopFees balance
+        uint256 initialFeesBalance = breadToken.balanceOf(chaincoopFees);
+
+        // Perform withdrawal
+        saving.withdraw(_poolId);
+
+        // Check balances after withdrawal
+        uint256 balanceAfterWithdraw = breadToken.balanceOf(user2);
+        uint256 feesBalanceAfterWithdraw = breadToken.balanceOf(chaincoopFees);
+
+        // Since isGoalAccomplished is true, user should receive full amount with no fees
+        assertEq(
+            balanceAfterWithdraw,
+            balanceBeforeWithdraw + 1000,
+            "User should receive full amount when goal is accomplished"
+        );
+
+        // No fees should be taken when goal is accomplished
+        assertEq(
+            feesBalanceAfterWithdraw,
+            initialFeesBalance,
+            "No fees should be taken when goal is accomplished"
+        );
+
+        // Verify pool is emptied
+        pools = saving.getSavingPoolBySaver(user2);
+        assertEq(
+            pools[0].amountSaved,
+            0,
+            "Pool should be empty after withdrawal"
+        );
+
+        vm.stopPrank();
+    }
 }
