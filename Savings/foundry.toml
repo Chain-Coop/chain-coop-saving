@@ -3,7 +3,7 @@ src = "src"
 out = "out"
 libs = ["lib"]
 gas_reports = ["ChainCoopSaving", "ChainCoopManagement", "YieldErc20_BreadToken"]
-libraries = ["src/lib/LibChainCoopSaving.sol:LibChainCoopSaving:0xD3bB7D60E58A95d70781e4cA463d8D3b9f05e280"]
+
 
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

@@ -48,7 +48,7 @@ contract ChainCoopManagement {
 
     }
     function removeAllowedTokens(address _tokenAddress)external onlyOwner{
-        isTokenAllowed[_tokenAddress] =true;
+        isTokenAllowed[_tokenAddress] =false;
         emit AllowToken(msg.sender,_tokenAddress);
         }
     function setChainCoopAddress(address _chaincoopfees)external onlyOwner{
