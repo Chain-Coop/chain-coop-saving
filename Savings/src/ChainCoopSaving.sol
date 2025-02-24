@@ -228,14 +228,11 @@ contract ChainCoopSaving is
             revert NotPoolOwner(msg.sender, pool.poolIndex);
         }
 
-        //for strictly locked
+        // For strictly locked pools
         if (pool.locktype == LockingType.STRICTLOCK) {
             if (pool.Duration > block.timestamp) {
                 revert SavingPeriodStillOn(msg.sender, _poolId, pool.Duration);
             } else {
-                //return all erc20 token to the user
-                //saved amount to zero
-
                 pool.isGoalAccomplished = true;
                 require(
                     IERC20(pool.tokenToSaveWith).transfer(
@@ -245,10 +242,12 @@ contract ChainCoopSaving is
                     "failed to transfer"
                 );
                 pool.amountSaved = 0;
+                userPoolBalance[msg.sender][_poolId] = 0; // Deduct contribution
+                return; // Exit after handling strictly locked
             }
         }
+
         if (pool.isGoalAccomplished) {
-            //return all erc20 token to the user
             require(
                 IERC20(pool.tokenToSaveWith).transfer(
                     pool.saver,
@@ -256,16 +255,15 @@ contract ChainCoopSaving is
                 ),
                 "failed to transfer"
             );
-            //saved amount to zero
             pool.amountSaved = 0;
+            userPoolBalance[msg.sender][_poolId] = 0; // Deduct contribution
         } else {
-            //take some penalty fee i.e 0.03%
             uint256 interest = LibChainCoopSaving.calculateInterest(
                 pool.amountSaved
             );
             uint256 amountReturnToUser = pool.amountSaved - interest;
-            //saved amount to zeror
             pool.amountSaved = 0;
+            userPoolBalance[msg.sender][_poolId] = 0; // Deduct contribution
 
             require(
                 IERC20(pool.tokenToSaveWith).transfer(
