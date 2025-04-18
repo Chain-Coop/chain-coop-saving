@@ -57,6 +57,7 @@ contract ChainCoopSaving is
     );
     event RestartSaving(address _poolOwner, bytes32 _poolId);
     event StopSaving(address _poolOwner, bytes32 _poolId);
+    event PoolClosed(address indexed user, bytes32 indexed poolId);
 
     struct Contribution {
         address tokenAddress;
@@ -211,13 +212,10 @@ contract ChainCoopSaving is
             revert NotPoolOwner(msg.sender, pool.poolIndex);
         }
 
-        //for strictly locked
         if (pool.locktype == LockingType.STRICTLOCK) {
             if (pool.Duration > block.timestamp) {
                 revert SavingPeriodStillOn(msg.sender, _poolId, pool.Duration);
             } else {
-                //return all erc20 token to the user
-                //saved amount to zero
                 uint256 amount = pool.amountSaved;
                 pool.amountSaved = 0;
                 pool.isGoalAccomplished = true;
@@ -226,9 +224,7 @@ contract ChainCoopSaving is
                     "failed to transfer"
                 );
             }
-        }
-        if (pool.isGoalAccomplished) {
-            //return all erc20 token to the user
+        } else if (pool.isGoalAccomplished) {
             uint256 amount = pool.amountSaved;
             pool.amountSaved = 0;
             require(
@@ -236,12 +232,10 @@ contract ChainCoopSaving is
                 "failed to transfer"
             );
         } else {
-            //take some penalty fee i.e 0.03%
             uint256 interest = LibChainCoopSaving.calculateInterest(
                 pool.amountSaved
             );
             uint256 amountReturnToUser = pool.amountSaved - interest;
-            //saved amount to zeror
             pool.amountSaved = 0;
 
             require(
@@ -257,6 +251,25 @@ contract ChainCoopSaving is
                 "Failed to transfer"
             );
         }
+        emit Withdraw(
+            msg.sender,
+            pool.tokenToSaveWith,
+            pool.amountSaved,
+            pool.poolIndex
+        );
+
+        delete poolSavingPool[_poolId];
+        delete userPoolBalance[msg.sender][_poolId];
+
+        bytes32[] storage userPools = userContributedPools[msg.sender];
+        for (uint256 i = 0; i < userPools.length; i++) {
+            if (userPools[i] == _poolId) {
+                userPools[i] = userPools[userPools.length - 1];
+                userPools.pop();
+                break;
+            }
+        }
+        emit PoolClosed(msg.sender, _poolId);
     }
 
     /****

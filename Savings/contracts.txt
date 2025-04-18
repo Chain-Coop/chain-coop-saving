@@ -4,8 +4,8 @@ Transaction hash: 0xd79d0936d13940d8e4437a41fa8b4d92872c59d28ac84f0fa3ddeac6ffc7
 
 
 //SAVING CONTRACT
-Deployed to: 0xB2A8e026D2aaC932fF22BDbc83E52592d3F80900
-Transaction hash: 0xcd8c35d8e297531a5042e845ab608dad71a3641b3213e681f44b24f5544965c0
+Deployed to: 0x5AA6f85559E755f85Cdb8739355c4A2336e63c42
+Transaction hash: 0x545175ae907b85bee95880773aefdeaeb05d3510c200ed8e985806d89204f597
 
 //ALLOWED TOKEN
 ->LSK TOKEN on L2
@@ -19,3 +19,8 @@ Transaction hash: 0xcd8c35d8e297531a5042e845ab608dad71a3641b3213e681f44b24f55449
   --verifier-url https://sepolia-blockscout.lisk.com/api \
   0xbbB1C0d4C4406D5ecD8983abc06Bca7C9330f58e \
   src/ChainCoopSaving.sol:ChainCoopSaving
+//deploy command
+   forge script script/ChainCoopSaving.s.sol:ChainCoopSavingScript \ 
+  --rpc-url https://rpc.sepolia-api.lisk.com \
+  --libraries src/lib/LibChainCoopSaving.sol:LibChainCoopSaving:0xD3bB7D60E58A95d70781e4cA463d8D3b9f05e280 \
+  --broadcast
