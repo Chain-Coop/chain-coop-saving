@@ -123,7 +123,13 @@ contract SavingTest is Test {
             0,
             "Amount saved should be zero after withdrawal"
         );
-
+        ChainCoopSaving.SavingPool[] memory poolAfter = saving
+            .getSavingPoolBySaver(user3);
+        assertEq(
+            poolAfter.length,
+            0,
+            "User should have no saving pool after withdrawal"
+        );
         vm.stopPrank();
     }
 
@@ -214,6 +220,13 @@ contract SavingTest is Test {
             0,
             "Amount saved should be zero after withdrawal"
         );
+        ChainCoopSaving.SavingPool[] memory poolAfter = saving
+            .getSavingPoolBySaver(user3);
+        assertEq(
+            poolAfter.length,
+            0,
+            "User should have no saving pool after withdrawal"
+        );
         vm.stopPrank();
     }
 
@@ -280,5 +293,105 @@ contract SavingTest is Test {
         assertEq(amountSaved, initialAmount + 5 * 10 ** 18);
         vm.stopPrank();
     }
-    
+
+
+    function test_update_saving() public {
+        // Open a new saving pool
+        address tokenToSaveWith = address(breadToken);
+        uint256 initialAmount = 10 * 10 ** 18;
+        string memory reason = "Lock Savings Test";
+        uint256 duration = 100;
+
+        vm.startPrank(user2);
+        breadToken.approve(address(saving), initialAmount);
+        saving.openSavingPool(
+            tokenToSaveWith,
+            initialAmount,
+            reason,
+            IChainCoopSaving.LockingType.LOCK,
+            duration
+        );
+        ChainCoopSaving.SavingPool[] memory poolsBefore = saving
+            .getSavingPoolBySaver(user2);
+        bytes32 _poolId = poolsBefore[0].poolIndex;
+        breadToken.approve(address(saving), 100 * 10 ** 18);
+        saving.updateSaving(_poolId, 100 * 10 ** 18);
+        (, , , , , , uint256 amountSaved, , , ) = saving.poolSavingPool(
+            _poolId
+        );
+        vm.stopPrank();
+
+        assertEq(
+            amountSaved,
+            110 * 10 ** 18,
+            "Balance not incremented correctly after second update"
+        );
+    }
+
+    function test_withdraw_strict_lock_saving() public {
+        address tokenToSaveWith = address(breadToken);
+        uint256 initialAmount = 10 * 10 ** 18;
+        string memory reason = "Strict Lock Savings Test";
+        uint256 duration = 100;
+
+        vm.startPrank(user3);
+        breadToken.approve(address(saving), initialAmount);
+        saving.openSavingPool(
+            tokenToSaveWith,
+            initialAmount,
+            reason,
+            IChainCoopSaving.LockingType.STRICTLOCK,
+            duration
+        );
+        ChainCoopSaving.SavingPool[] memory poolsBefore = saving
+            .getSavingPoolBySaver(user3);
+        bytes32 _poolId = poolsBefore[0].poolIndex;
+
+        vm.expectRevert();
+        saving.withdraw(_poolId);
+    }
+
+    function test_withdraw_after_duration() public {
+        address tokenToSaveWith = address(breadToken);
+        uint256 initialAmount = 10 * 10 ** 18;
+        string memory reason = "Withdraw After Duration Test";
+        uint256 duration = 100;
+
+        vm.startPrank(user3);
+        breadToken.approve(address(saving), initialAmount);
+        saving.openSavingPool(
+            tokenToSaveWith,
+            initialAmount,
+            reason,
+            IChainCoopSaving.LockingType.STRICTLOCK,
+            duration
+        );
+
+        vm.warp(block.timestamp + duration + 100); // Move time forward to after the duration
+
+        ChainCoopSaving.SavingPool[] memory poolsBefore = saving
+            .getSavingPoolBySaver(user3);
+        bytes32 _poolId = poolsBefore[0].poolIndex;
+
+        saving.withdraw(_poolId);
+        (, , , , , , uint256 amountSaved, , , ) = saving.poolSavingPool(
+            poolsBefore[0].poolIndex
+        );
+        assertEq(
+            amountSaved,
+            0,
+            "Amount saved should be zero after withdrawal"
+        );
+        ChainCoopSaving.SavingPool[] memory poolAfter = saving
+            .getSavingPoolBySaver(user3);
+        assertEq(
+            poolAfter.length,
+            0,
+            "User should have no saving pool after withdrawal"
+        );
+    }
 }
+
+    
+
+
