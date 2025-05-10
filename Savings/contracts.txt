@@ -1,11 +1,32 @@
-#library
+#library lisk sepolia
 Deployed to: 0xD3bB7D60E58A95d70781e4cA463d8D3b9f05e280
 Transaction hash: 0xd79d0936d13940d8e4437a41fa8b4d92872c59d28ac84f0fa3ddeac6ffc73e85
+#library bsc testnet
+Deployed to: 0x09Ea83bCE281A058c24457AfA8193f6F3e78fa2f
+Transaction hash: 0x4ea428ad874584a1b28d44f94e3452edbc4cf4ebb886ef46b4d72e245a296e46
+#library etherlinks
+Deployed to: 0x63f3c4fF923890bcaFd0A85dc2c30b580e84c28e
+Transaction hash: 0x10401f7da6f1fbebdfebd00c9e05f3e9814c1dcc9e3cb71f06bb56dc8ad2c5ba
 
-
-//SAVING CONTRACT
+//SAVING CONTRACT lisk sepolia
 Deployed to: 0x5AA6f85559E755f85Cdb8739355c4A2336e63c42
 Transaction hash: 0x545175ae907b85bee95880773aefdeaeb05d3510c200ed8e985806d89204f597
+
+//Saving Contract on bsc testnet
+
+  Hash: 0x5b562fea128c3ad2b8b60d2776ef746515120c9e78522962acf1933b1d4aa5f4
+Contract Address: 0x7bD4ecCB69eD9E94c2E3173F528d2dd26aDdb55a
+
+Saving Contract on etherlinks
+
+##### etherlink-testnet
+✅  [Success] Hash: 0x0860237cbcaedbb03985d9e9364c26842b3eadea6b1d7ec2dc7ba7b972baf631
+Contract Address: 0x09Ea83bCE281A058c24457AfA8193f6F3e78fa2f
+
+
+
+
+
 
 //ALLOWED TOKEN
 ->LSK TOKEN on L2
@@ -21,6 +42,6 @@ Transaction hash: 0x545175ae907b85bee95880773aefdeaeb05d3510c200ed8e985806d89204
   src/ChainCoopSaving.sol:ChainCoopSaving
 //deploy command
    forge script script/ChainCoopSaving.s.sol:ChainCoopSavingScript \ 
-  --rpc-url https://rpc.sepolia-api.lisk.com \
-  --libraries src/lib/LibChainCoopSaving.sol:LibChainCoopSaving:0xD3bB7D60E58A95d70781e4cA463d8D3b9f05e280 \
+  --rpc-url https://bsc-testnet.drpc.org \
+  --libraries src/lib/LibChainCoopSaving.sol:LibChainCoopSaving:0x09Ea83bCE281A058c24457AfA8193f6F3e78fa2f \
   --broadcast

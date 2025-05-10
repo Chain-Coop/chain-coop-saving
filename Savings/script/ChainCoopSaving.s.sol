@@ -6,7 +6,7 @@ import {ChainCoopSaving} from "../src/ChainCoopSaving.sol";
 
 contract ChainCoopSavingScript is Script {
     ChainCoopSaving public chainCoopSaving;
-    address public tokenAddress = 0x19Ea0584D2A73265251Bf8dC0Bc5A47DebF539ac; // WETH
+    address public tokenAddress = 0xcab4981B2C0c843142B7e0D05Ac98DE00d8299C4; // WETH
 
     function setUp() public {}
 
