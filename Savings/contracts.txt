@@ -5,8 +5,8 @@ Transaction hash: 0xd79d0936d13940d8e4437a41fa8b4d92872c59d28ac84f0fa3ddeac6ffc7
 Deployed to: 0x09Ea83bCE281A058c24457AfA8193f6F3e78fa2f
 Transaction hash: 0x4ea428ad874584a1b28d44f94e3452edbc4cf4ebb886ef46b4d72e245a296e46
 #library etherlinks
-Deployed to: 0x63f3c4fF923890bcaFd0A85dc2c30b580e84c28e
-Transaction hash: 0x10401f7da6f1fbebdfebd00c9e05f3e9814c1dcc9e3cb71f06bb56dc8ad2c5ba
+Deployed to: 0x94Ff57c3b2e8bD70c6779CF89dc5add1b1733873
+Transaction hash: 0xe296aed35c5db111eab1fef2fe3103b7ac769284c9a11594fc120056c9b8e576
 
 //SAVING CONTRACT lisk sepolia
 Deployed to: 0x5AA6f85559E755f85Cdb8739355c4A2336e63c42
@@ -20,9 +20,8 @@ Contract Address: 0x7bD4ecCB69eD9E94c2E3173F528d2dd26aDdb55a
 Saving Contract on etherlinks
 
 ##### etherlink-testnet
-✅  [Success] Hash: 0x0860237cbcaedbb03985d9e9364c26842b3eadea6b1d7ec2dc7ba7b972baf631
-Contract Address: 0x09Ea83bCE281A058c24457AfA8193f6F3e78fa2f
-
+✅  [Success] Hash: 0x500f37de013be496c01f0c57a9e51f2a83cbbc4e39d488e20ead3b39fa519d60
+Contract Address: 0xdc8B2d719968A2b8Cd880ddb9B1db31Ca5ae2006
 
 
 
