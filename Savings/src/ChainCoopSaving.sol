@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.25;
 import {IChainCoopSaving} from "./interface/IchainCoopSaving.sol";
 import {LibChainCoopSaving} from "./lib/LibChainCoopSaving.sol";
 import "./ChainCoopManagement.sol";

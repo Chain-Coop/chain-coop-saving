@@ -1,27 +1,37 @@
 #library lisk sepolia
-Deployed to: 0xD3bB7D60E58A95d70781e4cA463d8D3b9f05e280
-Transaction hash: 0xd79d0936d13940d8e4437a41fa8b4d92872c59d28ac84f0fa3ddeac6ffc73e85
+Deployer: 0xf04990915C006A35092493094B4367F6d93f9ff0
+Deployed to: 0x74A97FD96037D8dA0A679ca3D4e26407439EdD02
+Transaction hash: 0xf6994419a353e07a659e20565f8d9025589e921c9bfb9360ad8a9f90a4f90f5b
 #library bsc testnet
-Deployed to: 0x09Ea83bCE281A058c24457AfA8193f6F3e78fa2f
-Transaction hash: 0x4ea428ad874584a1b28d44f94e3452edbc4cf4ebb886ef46b4d72e245a296e46
-#library etherlinks
+Deployer: 0xf04990915C006A35092493094B4367F6d93f9ff0
+Deployed to: 0x95E3511C8b1a977276CF808149b8FE061EB41fe6
+Transaction hash: 0xbda5d1dd4b6d87efce81a353cd96fce22eb504cb1c1f3f83f572d7341018ded4
+#library etherlinks testnet
 Deployed to: 0x94Ff57c3b2e8bD70c6779CF89dc5add1b1733873
 Transaction hash: 0xe296aed35c5db111eab1fef2fe3103b7ac769284c9a11594fc120056c9b8e576
+#library Gnosis testnet
+Deployer: 0xf04990915C006A35092493094B4367F6d93f9ff0
+Deployed to: 0x55Fddf287dfF444310F523B2bdf7B6ddC78a7421
+Transaction hash: 0x4717011459b45b488d8e4ce5069fe38b696bc21ed59879b85f4ce3d3842a0d84
 
-//SAVING CONTRACT lisk sepolia
-Deployed to: 0x5AA6f85559E755f85Cdb8739355c4A2336e63c42
-Transaction hash: 0x545175ae907b85bee95880773aefdeaeb05d3510c200ed8e985806d89204f597
 
-//Saving Contract on bsc testnet
+✅  [Success] Hash: 0xe99289f351dabd948193e110ecfb649953a7057a9f4010c77863101b1042ee9f
+Contract Address: 0xa6FB61dc7aF26A36B0bD955b7827c7b76Ac0a8Df
 
-  Hash: 0x5b562fea128c3ad2b8b60d2776ef746515120c9e78522962acf1933b1d4aa5f4
-Contract Address: 0x7bD4ecCB69eD9E94c2E3173F528d2dd26aDdb55a
+##### bsc-testnet
+✅  [Success] Hash: 0xb3094f150cce7de64e31d1faeaf19fb6657fd7124fa7a8c40094f30d4a288639
+Contract Address: 0x7a7a94457eF1A7961320cfad4C218F7A30b8Da81
 
 Saving Contract on etherlinks
 
 ##### etherlink-testnet
 ✅  [Success] Hash: 0x500f37de013be496c01f0c57a9e51f2a83cbbc4e39d488e20ead3b39fa519d60
 Contract Address: 0xdc8B2d719968A2b8Cd880ddb9B1db31Ca5ae2006
+
+##### chiado
+✅  [Success] Hash: 0x3770507bf4b50ff99853a13d557bb5593c405e742504e4674ff499b66d1dd97f
+Contract Address: 0x3683C552579C0297C91F90c2106dB3a8BE61C98D
+
 
 
 
