@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.30;
 import {IChainCoopSaving} from "./interface/IchainCoopSaving.sol";
 import {LibChainCoopSaving} from "./lib/LibChainCoopSaving.sol";
 import "./ChainCoopManagement.sol";
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
-
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 error ZeroAmount(uint256 _amount);
-
 error ZeroDuration(uint256 _duration);
 error ZeroGoalAmount(uint256 _goalamount);
 error NotPoolOwner(address _caller, bytes32 _poolId);
@@ -20,19 +19,27 @@ error PoolStoped(address _caller, bytes32 _poolid);
 contract ChainCoopSaving is
     IChainCoopSaving,
     ChainCoopManagement,
-    ReentrancyGuard
+    ReentrancyGuard,
+    ERC2771Context
 {
     using LibChainCoopSaving for address;
 
-    //constructor => incase of upgradability will update it
-    constructor(address _tokenAddress) ChainCoopManagement(_tokenAddress) {}
+    // Constructor updated to include trusted forwarder for ERC2771
+    constructor(
+        address _tokenAddress,
+        address _trustedForwarder
+    ) ChainCoopManagement(_tokenAddress) ERC2771Context(_trustedForwarder) {}
 
-    //      function initialize(address _allowedToken) public initializer {
-    //     __ChainCoopManagement_init(_allowedToken); // Initialize the inherited contract
+    // Override _msgSender() and _msgData() to support meta-transactions
+    function _msgSender() internal view override returns (address sender) {
+        return ERC2771Context._msgSender();
+    }
 
-    // }
+    function _msgData() internal view override returns (bytes calldata) {
+        return ERC2771Context._msgData();
+    }
 
-    //events
+    // Events
     event OpenSavingPool(
         address indexed user,
         address indexed _tokenAddress,
@@ -63,17 +70,18 @@ contract ChainCoopSaving is
         address tokenAddress;
         uint256 amount;
     }
-    //Mapping
+
+    // Mappings
     mapping(bytes32 => SavingPool) public poolSavingPool;
     mapping(address => mapping(bytes32 => uint256)) public userPoolBalance;
     mapping(address => bytes32[]) public userContributedPools;
 
-    //Pool Count
+    // Pool Count
     uint256 public poolCount = 0;
 
-    /***
+    /**
      * @notice Allow Opening a saving pool with initial contribution
-     *
+     * @dev Now supports meta-transactions through ERC2771Context
      */
     function openSavingPool(
         address _tokenTosaveWith,
@@ -82,6 +90,8 @@ contract ChainCoopSaving is
         LockingType _locktype,
         uint256 _duration
     ) external onlyAllowedTokens(_tokenTosaveWith) {
+        address sender = _msgSender(); // Use ERC2771Context _msgSender()
+
         if (_savedAmount <= 0) {
             revert ZeroAmount(_savedAmount);
         }
@@ -89,8 +99,8 @@ contract ChainCoopSaving is
         if (_duration <= 0) {
             revert ZeroDuration(_duration);
         }
+
         uint256 _index = poolCount;
-        //check lock type
         bool accomplished;
         if (_locktype == LockingType.FLEXIBLE) {
             accomplished = true;
@@ -98,13 +108,14 @@ contract ChainCoopSaving is
         uint256 _starttime = block.timestamp;
 
         bytes32 _poolId = LibChainCoopSaving.generatePoolIndex(
-            msg.sender,
+            sender,
             block.timestamp,
             _savedAmount
         );
+
         require(
             IERC20(_tokenTosaveWith).transferFrom(
-                msg.sender,
+                sender,
                 address(this),
                 _savedAmount
             ),
@@ -112,7 +123,7 @@ contract ChainCoopSaving is
         );
 
         SavingPool memory pool = SavingPool({
-            saver: msg.sender,
+            saver: sender,
             tokenToSaveWith: _tokenTosaveWith,
             Reason: _reason,
             poolIndex: _poolId,
@@ -123,13 +134,14 @@ contract ChainCoopSaving is
             isGoalAccomplished: accomplished,
             isStoped: false
         });
+
         poolCount++;
         poolSavingPool[_poolId] = pool;
-        userContributedPools[msg.sender].push(_poolId);
-        userPoolBalance[msg.sender][_poolId] += _savedAmount;
+        userContributedPools[sender].push(_poolId);
+        userPoolBalance[sender][_poolId] += _savedAmount;
 
         emit OpenSavingPool(
-            msg.sender,
+            sender,
             _tokenTosaveWith,
             _index,
             _savedAmount,
@@ -140,19 +152,21 @@ contract ChainCoopSaving is
         );
     }
 
-    /*****
+    /**
      * @notice Allow adding funds to an existing saving pool
+     * @dev Now supports meta-transactions through ERC2771Context
      */
-
     function updateSaving(bytes32 _poolId, uint256 _amount) external {
-        if (poolSavingPool[_poolId].saver != msg.sender) {
-            revert NotPoolOwner(msg.sender, poolSavingPool[_poolId].poolIndex);
+        address sender = _msgSender(); // Use ERC2771Context _msgSender()
+
+        if (poolSavingPool[_poolId].saver != sender) {
+            revert NotPoolOwner(sender, poolSavingPool[_poolId].poolIndex);
         }
         if (poolSavingPool[_poolId].isStoped) {
-            revert PoolStoped(msg.sender, _poolId);
+            revert PoolStoped(sender, _poolId);
         }
         if (poolSavingPool[_poolId].locktype == LockingType.STRICTLOCK) {
-            revert StrictlySavingType(msg.sender, _poolId);
+            revert StrictlySavingType(sender, _poolId);
         }
         if (_amount <= 0) {
             revert ZeroAmount(_amount);
@@ -161,12 +175,13 @@ contract ChainCoopSaving is
         SavingPool storage pool = poolSavingPool[_poolId];
         require(
             IERC20(pool.tokenToSaveWith).transferFrom(
-                msg.sender,
+                sender,
                 address(this),
                 _amount
             ),
             "failed to deposit"
         );
+
         pool.amountSaved += _amount;
         if (pool.locktype == LockingType.LOCK) {
             if (pool.Duration <= block.timestamp) {
@@ -175,46 +190,59 @@ contract ChainCoopSaving is
         }
 
         emit UpdateSaving(
-            msg.sender,
+            sender,
             pool.tokenToSaveWith,
             _amount,
             pool.poolIndex
         );
     }
 
-    //Stop Saving
+    /**
+     * @notice Stop Saving
+     * @dev Now supports meta-transactions through ERC2771Context
+     */
     function stopSaving(bytes32 _poolId) external {
-        if (poolSavingPool[_poolId].saver != msg.sender) {
-            revert NotPoolOwner(msg.sender, poolSavingPool[_poolId].poolIndex);
+        address sender = _msgSender(); // Use ERC2771Context _msgSender()
+
+        if (poolSavingPool[_poolId].saver != sender) {
+            revert NotPoolOwner(sender, poolSavingPool[_poolId].poolIndex);
         }
         poolSavingPool[_poolId].isStoped = true;
-        emit StopSaving(msg.sender, _poolId);
+        emit StopSaving(sender, _poolId);
     }
 
-    //Restart Saving
+    /**
+     * @notice Restart Saving
+     * @dev Now supports meta-transactions through ERC2771Context
+     */
     function restartSaving(bytes32 _poolId) external {
-        if (poolSavingPool[_poolId].saver != msg.sender) {
-            revert NotPoolOwner(msg.sender, poolSavingPool[_poolId].poolIndex);
+        address sender = _msgSender(); // Use ERC2771Context _msgSender()
+
+        if (poolSavingPool[_poolId].saver != sender) {
+            revert NotPoolOwner(sender, poolSavingPool[_poolId].poolIndex);
         }
         poolSavingPool[_poolId].isStoped = false;
-        emit RestartSaving(msg.sender, _poolId);
+        emit RestartSaving(sender, _poolId);
     }
 
-    /****
+    /**
      * @notice Allow withdrawing funds from an existing saving pool
-     * @param    poolId => bytes32
-     * transfer penalty fee to the contract owner
-     *transfer remaining amount to the user
+     * @param _poolId bytes32 pool identifier
+     * @dev Now supports meta-transactions through ERC2771Context
+     * Transfer penalty fee to the contract owner
+     * Transfer remaining amount to the user
      */
     function withdraw(bytes32 _poolId) external nonReentrant {
+        address sender = _msgSender(); // Use ERC2771Context _msgSender()
         SavingPool storage pool = poolSavingPool[_poolId];
-        if (pool.saver != msg.sender) {
-            revert NotPoolOwner(msg.sender, pool.poolIndex);
+
+        if (pool.saver != sender) {
+            revert NotPoolOwner(sender, pool.poolIndex);
         }
 
         if (pool.locktype == LockingType.STRICTLOCK) {
             if (pool.Duration > block.timestamp) {
-                revert SavingPeriodStillOn(msg.sender, _poolId, pool.Duration);
+                revert SavingPeriodStillOn(sender, _poolId, pool.Duration);
             } else {
                 uint256 amount = pool.amountSaved;
                 pool.amountSaved = 0;
@@ -251,17 +279,18 @@ contract ChainCoopSaving is
                 "Failed to transfer"
             );
         }
+
         emit Withdraw(
-            msg.sender,
+            sender,
             pool.tokenToSaveWith,
             pool.amountSaved,
             pool.poolIndex
         );
 
         delete poolSavingPool[_poolId];
-        delete userPoolBalance[msg.sender][_poolId];
+        delete userPoolBalance[sender][_poolId];
 
-        bytes32[] storage userPools = userContributedPools[msg.sender];
+        bytes32[] storage userPools = userContributedPools[sender];
         for (uint256 i = 0; i < userPools.length; i++) {
             if (userPools[i] == _poolId) {
                 userPools[i] = userPools[userPools.length - 1];
@@ -269,29 +298,25 @@ contract ChainCoopSaving is
                 break;
             }
         }
-        emit PoolClosed(msg.sender, _poolId);
+        emit PoolClosed(sender, _poolId);
     }
 
-    /****
-     * @notice Get All total number of  pools created
+    /**
+     * @notice Get All total number of pools created
      */
     function getSavingPoolCount() external view returns (uint256) {
         return poolCount;
     }
 
-    /***
-     * @notice get pool by index
-     * @param _poolIndex Index of the pool to get
-     *
-     * **/
-    /****Can remove this after some considerations ?????????? */
     function getSavingPoolByIndex(
         bytes32 _index
-    ) external view returns (SavingPool memory) {}
+    ) external view returns (SavingPool memory) {
+        return poolSavingPool[_index];
+    }
 
-    /***
+    /**
      * @notice get pool by the creator address
-     * **/
+     */
     function getSavingPoolBySaver(
         address _saver
     ) external view returns (SavingPool[] memory pools) {
@@ -309,19 +334,32 @@ contract ChainCoopSaving is
     ) external view returns (Contribution[] memory contributions) {
         uint256 userPoolCount = userContributedPools[_saver].length;
 
-        // Initialize the contributions array
         contributions = new Contribution[](userPoolCount);
 
-        // Loop through the pools the user owns
         for (uint256 i = 0; i < userPoolCount; i++) {
-            bytes32 poolId = userContributedPools[_saver][i]; // Retrieve the pool ID
-            SavingPool storage pool = poolSavingPool[poolId]; // Fetch the pool details
+            bytes32 poolId = userContributedPools[_saver][i];
+            SavingPool storage pool = poolSavingPool[poolId];
 
-            // Populate the contribution
             contributions[i] = Contribution({
                 tokenAddress: pool.tokenToSaveWith,
                 amount: pool.amountSaved
             });
         }
+    }
+
+    /**
+     * @notice Check if the contract supports meta-transactions
+     * @return bool true if meta-transactions are supported
+     */
+    function supportsMetaTransactions() external pure returns (bool) {
+        return true;
+    }
+
+    /**
+     * @notice Get the trusted forwarder address
+     * @return address The trusted forwarder address
+     */
+    function getTrustedForwarder() external view returns (address) {
+        return trustedForwarder();
     }
 }

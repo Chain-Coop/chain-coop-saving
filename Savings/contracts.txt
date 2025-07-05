@@ -9,28 +9,79 @@ Transaction hash: 0xbda5d1dd4b6d87efce81a353cd96fce22eb504cb1c1f3f83f572d7341018
 #library etherlinks testnet
 Deployed to: 0x94Ff57c3b2e8bD70c6779CF89dc5add1b1733873
 Transaction hash: 0xe296aed35c5db111eab1fef2fe3103b7ac769284c9a11594fc120056c9b8e576
-#library Gnosis testnet
+#library Polygon testnet
 Deployer: 0xf04990915C006A35092493094B4367F6d93f9ff0
-Deployed to: 0x55Fddf287dfF444310F523B2bdf7B6ddC78a7421
-Transaction hash: 0x4717011459b45b488d8e4ce5069fe38b696bc21ed59879b85f4ce3d3842a0d84
+Deployed to: 0xB18baD7394558f94A9F3e2F59159EE70aFb47318
+Transaction hash: 0x9d381a23ad7819568961f4477da39bc4774b0fd269b1c9a9b5bfca138ece468c
+#library BSC mainnet
+Deployer: 0x2c59b52d5ca06f6ebb5410692Ee946481cBbe1Db
+Deployed to: 0xb6301d1095AAC23be7CdFeCBa0992B06b6DFFfc3
+Transaction hash: 0xdf6670d82a557b08e3506050cb9e6651c549d669a1ed3d36afb43bdb6455f022
+#library Polygon mainnet
+Deployer: 0x2c59b52d5ca06f6ebb5410692Ee946481cBbe1Db
+Deployed to: 0x2E5f5960CA1C97C21564850B680b209fCe1b82e4
+Transaction hash: 0x521b82131be6842d1b896de12e9925623729b9dc66e2c0f5b8f500b0744e17c3
 
 
-✅  [Success] Hash: 0xe99289f351dabd948193e110ecfb649953a7057a9f4010c77863101b1042ee9f
-Contract Address: 0xa6FB61dc7aF26A36B0bD955b7827c7b76Ac0a8Df
+
+##### 4202
+✅  [Success] Hash: 0xedd4fa64e483d7a1df218bf2a7bbf73f6b37d25601d3c17bd815b13cb7c68144
+Contract Address: 0x5d5540B425cB223b3c5b19D72A9b1123a7c9d9D1
 
 ##### bsc-testnet
-✅  [Success] Hash: 0xb3094f150cce7de64e31d1faeaf19fb6657fd7124fa7a8c40094f30d4a288639
-Contract Address: 0x7a7a94457eF1A7961320cfad4C218F7A30b8Da81
+✅  [Success] Hash: 0xa32bc0bca7c043ba44849491695ccb5cbd878b31756552c596a8fdae45f824c7
+Contract Address: 0x5AA6f85559E755f85Cdb8739355c4A2336e63c42
+##### bsc
+✅  [Success] Hash: 0xd1949dc69b69e2c230e4616f0de2137e34c8fb53a16e668f7f7702502c9f8b8a
+Contract Address: 0xbfc4178675113B19BBc895E537dD64dA294D35f1
+Block: 51601119
+Paid: 0.0003517336 ETH (3517336 gas * 0.1 gwei)
 
-Saving Contract on etherlinks
 
 ##### etherlink-testnet
-✅  [Success] Hash: 0x500f37de013be496c01f0c57a9e51f2a83cbbc4e39d488e20ead3b39fa519d60
-Contract Address: 0xdc8B2d719968A2b8Cd880ddb9B1db31Ca5ae2006
+✅  [Success] Hash: 0x60974a861f22f4a603e7430e33b69f4cb39c9fbe88ecbafe74535cec6f080303
+Contract Address: 0xDC3Be002ef73D72E2D02e5e5BfaFC4048916233a
 
-##### chiado
-✅  [Success] Hash: 0x3770507bf4b50ff99853a13d557bb5593c405e742504e4674ff499b66d1dd97f
-Contract Address: 0x3683C552579C0297C91F90c2106dB3a8BE61C98D
+##### amoy
+✅  [Success] Hash: 0x97c8e2ff1e026af6776e6f1ad91bf75a59a9f5bb3e16c85ebcb7f20a4e4088af
+Contract Address: 0x41593C4de4a2e60f2cBCa937C4565eF754418433
+##### polygon
+✅  [Success] Hash: 0xfc2fed0b2107b617f599fc88532bcdbdf732515aa5f5d0df4d046344d18c7f7b
+Contract Address: 0x8B35732be105b25Baf544aD535E3FB445dcE59E6
+Block: 72871519
+Paid: 0.105520080130141432 ETH (3517336 gas * 30.000000037 gwei)
+
+Forwarder Contract
+##### bsc-testnet
+✅  [Success] Hash: 0x0a0201a73e0d895b5d603d9d0da38f9775c7e6a660dd4b0a5f5796dfd51410fa
+Contract Address: 0xB2A8e026D2aaC932fF22BDbc83E52592d3F80900
+Block: 52741720
+Paid: 0.0034649554176 ETH (1476208 gas * 2.3472 gwei)
+##### bsc
+✅  [Success] Hash: 0x8cdeafd0016fc0f59c915136d3f5165103a6e1635751038eb59da552ac2051a3
+Contract Address: 0x58D2368c133ea5fDD112d8bd98d227C368cF9E73
+Block: 51601118
+Paid: 0.000147623 ETH (1476230 gas * 0.1 gwei)
+
+##### 4202
+✅  [Success] Hash: 0x93c49f9e0179e099f720086330761dd53cb543ff6a197c77ca28fe61c046c181
+Contract Address: 0x6194aC6311f0345B7389418D01C5C7683b9DB1b4
+Block: 21536313
+Paid: 0.000000000374956832 ETH (1476208 gas * 0.000000254 gwei)
+
+##### amoy
+✅  [Success] Hash: 0x01568d0226e3de87cce251aa333ee275323c6423c8a0ec4dd93090e4f282539b
+Contract Address: 0x99C1C0EAffc9BB05cf843352ACe88C85b7828CC0
+##### polygon
+✅  [Success] Hash: 0x0e7385c2ff34b791ed97c4105fa0ce54e222dc2b7b4de0cd100662546a7236d2
+Contract Address: 0x936254D716d1292D209Add8454C2dFd3BbCc9776
+Block: 72871519
+Paid: 0.04428690005462051 ETH (1476230 gas * 30.000000037 gwei)
+
+##### etherlink-testnet
+✅  [Success] Hash: 0x7fed9d4a2a73f3059971da3a3ec8356c8d82a42da085e0115177203428d7a6cf
+Contract Address: 0x61bF0E31f30FAe4aa437C950711E9197A04C9719
+
 
 
 
