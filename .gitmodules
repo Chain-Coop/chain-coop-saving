@@ -16,7 +16,3 @@
 [submodule "Savings/lib/aave-v3-origin"]
 	path = Savings/lib/aave-v3-origin
 	url = https://github.com/aave-dao/aave-v3-origin
-[submodule "Savings/lib/openzeppelin-contracts"]
-	path = Savings/lib/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts
-
