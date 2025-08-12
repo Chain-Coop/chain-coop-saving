@@ -85,6 +85,15 @@ Contract Address: 0x61bF0E31f30FAe4aa437C950711E9197A04C9719
 
 
 
+####Upgradeable contract deployment
+BSC-- ERC2771ForwarderUpgradeable (UUPS Proxy) deployed at: 0x3dB49A323207Fadad7ee7cAeFC302c272AE66981
+  ChainCoopSaving (UUPS Proxy) deployed at: 0x4139a827dCa553d60F864d76856C7C5EB715452a
+
+Polygon-  ERC2771ForwarderUpgradeable (UUPS Proxy) deployed at: 0x7045D4eEA52bA96A2F2037b464360a43bd33e60B
+  ChainCoopSaving (UUPS Proxy) deployed at: 0xbB22d720da22E4c793a13af71a66440965C69Bcc
+
+
+
 
 
 

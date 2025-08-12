@@ -3,7 +3,12 @@ src = "src"
 out = "out"
 libs = ["lib"]
 solc-version = "0.8.30"
-gas_reports = ["ChainCoopSaving", "ChainCoopManagement", "YieldErc20_BreadToken"]
+via_ir = true
+ast = true 
+ffi = true
+build_info = true
+extra_output = ["storageLayout"]
+gas_reports = ["ChainCoopSaving", "ChainCoopManagement"]
 
 
 
