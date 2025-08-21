@@ -37,12 +37,6 @@ contract ChainCoopManagement is Initializable, OwnableUpgradeable {
         _;
     }
 
-    function transferOwnership(address newOwner) public override onlyOwner {
-        address previousOwner = owner();
-        super.transferOwnership(newOwner);
-        emit AdminChanged(previousOwner, newOwner);
-    }
-
     function setAllowedTokens(address _tokenAddress) external onlyOwner {
         isTokenAllowed[_tokenAddress] = true;
         emit AllowToken(msg.sender, _tokenAddress);
